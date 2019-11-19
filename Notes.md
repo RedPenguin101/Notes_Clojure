@@ -207,6 +207,7 @@
 * `(re-find #"^left-" "cleft-chin") ; => nil`
 * `(re-find #"^left-" "chin") ; => nil`
 * `^` means will only match at beginning of string
+* `(clojure.string/trim text)` cleans off whitespace
 
 ### let
 * binds names to values.
@@ -222,7 +223,7 @@
 x
 ; => 0
 ```
-## Loop
+### Loop
 * `loop` is like an anonymous function with a parameter iteration, that is called by `recur` from within itself.
 * `recur` is better than literally calling the function for speed reasons
 * general syntax 
@@ -248,7 +249,9 @@ x
 ; => Iteration 4
 ; => Goodbye
 ```
-## Map
+
+## Sequence function
+### Map
 * applies a function to one or more collections
 * It can take multiple collections as arguments, with the contents of the collections being passed in pair-wise
 
@@ -366,4 +369,39 @@ x
     ([n] (cons n (lazy-seq (even-numbers (+ n 2))))))
     
 (take 10 (even-numbers))
+```
+
+## Function Functions
+
+### Apply
+* both accepts and returns a function
+* explodes a sequence so it can be passed to a function that expects a rest parameter
+* `(apply max [1 2 3]) ;=> 3`
+* what is returned is `(max 1 2 3)`
+* `(apply max 1 [2 3 4]) ;=> 4`
+
+### Partial
+* takes a function and any number of args, returns a function
+* that returned function can be called with new args, and then the 'inner' function is called with the initial and new args.
+
+`((partial + 10) 5) ;=> 15`
+
+* use partials to keep your code clean, no repeat yourself.
+
+### Comp
+* compose functions from other functions
+* `((comp inc *) 2 3) ;=> 7`
+* creates a g(x) like f1(f2(x))
+* you can use it to get values from nested maps: `(comp :strength :attributes)`
+* all functions except the first applied (the one on the right of the comp form) have to take only one arguement
+* you can get around that to some extent by wrapping anonymous functions
+
+```clj
+(defn spell-slots
+    [char]
+    (int (inc (/ (c-int char) 2))))
+    
+; int inc c-int all take one arg, but / takes two.
+    
+(def spell-slots-comm (comp int inc #(/ % 2) c-int))
 ```
