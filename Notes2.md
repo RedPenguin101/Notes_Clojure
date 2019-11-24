@@ -4,11 +4,12 @@ https://learning.oreilly.com/library/view/getting-clojure/9781680506082/
 * `$ lein new app blottsbooks`
 * `$ lein run`
 
+
 # REPL
 * Get docstrings for function with `(doc average)`
 
+
 # Namespaces
-* Conceptually a big lookup table of vars indexed by symbols
 * In VM, clojure creates a namespace `user` and makes it current
 * Create new namespace with `(ns pricing)`. This makes it the current namespace.
 * Access things in another namespace by fully qualifying with `pricing/discount-price`
@@ -25,10 +26,11 @@ https://learning.oreilly.com/library/view/getting-clojure/9781680506082/
 * Shortcut full-qualification with alias `(require '[blottsbooks.pricing :as p])`
 * Or just avoid it by pulling in defs directly `(require '[blottsbooks.pricing :refer [discount-price]])` - though be careful with this, as you risk namespace collision
 
+
 # Data primatives
 * Keyword `:keyword`
 * String "string"
-* Integer
+* Integer `12`
 * Float `12.0`
 * Ratio `12/5`
 * Boolean `true` `false`
@@ -42,19 +44,21 @@ https://learning.oreilly.com/library/view/getting-clojure/9781680506082/
 * The only falsy things are `false` and `nil`
 * Everything else is truthy, even empty strings and collections, and 0
 
-# Arithmetic functions
-
+## Arithmetic functions
 * `+ * - /`
 * `(quot 8 3) ;=> 2`
 * Force floats with decimals if needed
 
-# String functions
-
+## String functions
 * `str` concats strings with space
 * `.toUpperCase`
+* `(clojure.string/replace input find-reg replace)`
+* `(clojure.string/join ", " sequence)`
+* `(re-find regex string)` - find substring
+* `(clojure.string/trim text)` cleans whitespace from start and end
 
 
-# Basic collections
+# Collections
 
 ## Vectors
 * A stack-assigned array implementation
@@ -74,11 +78,18 @@ https://learning.oreilly.com/library/view/getting-clojure/9781680506082/
 * Key, value pairs
 * Convention is keywords for keys, but can be anything
 * Constructed `{:key value}` or `(hash-map :key1 value1 :key2 value2)`
+
+### Getting stuff from maps
 * `keys` and `vals` functions
 * use `first` and `second` as a way to pull out the key and value a map pair
 * Get value with `(get book :title)` 
 * Or use the map as a function, with a key as argument `(book :title)`
 * _Or_ (this is most common) use the _keyword_ as a function with map as arg `(title :book)`
+* `get-in` is the nested version of `get`, pass in arg as a vec `[:b :c]` will pull out the value of `:c` in the map `{:a 0 :b {:c "value"}}`
+* All of these get methods can take a failover as a third argument.
+* Use `map` on a vector of maps to pull out all the attributes you want `(map :my-key vec-of-maps)`
+
+### Adding values to existing map
 * Add kv pairs to a map with `(assoc book :page-count 234)`
 * Remove them with `(dissoc book :published)` (dissocing a key that isn't in the map returns the original map)
 * You can 'dig into' a nested map with `assoc-in`
@@ -100,17 +111,33 @@ https://learning.oreilly.com/library/view/getting-clojure/9781680506082/
 * `conj` adds to a set (and returns same set if element is already in it)
 * `(disj authors "King")` removes King from authors
 
-
 ## General seq functions
+### Getting
 * `first`
 * `second`
 * `rest` (returns empty collection on 1 or 0 length seq)
 * (Don't use these on maps generally, they are unordered)
 * `count`
 * `(nth books 2)` direct index, but the same as `(books 2)`
-* `(cons "Carrie" novels)` adds Carrie to __start__, 
 * `contains?` (note: use this rather than `(book :fish)` to check if :fish is in book, since the latter returns nil both if the kw is not in the map, and if it is in the map with value nil. `contains?` returns true or false
 * `clojure.data/diff` acts on two sequences and returns 3: first with uniques in first, 2nd with uniques in second, third with matches `[nil nil "this matches]`
+
+#### Take(-while), Drop(-while)
+```clj
+(take number collection)
+(drop number collection)
+(take-while predicate collection)
+(drop-while predicate collection)
+```
+* Take-while stops taking as soon as it hits a falsey evaluation.
+* Drop-while _starts_ taking as soon as it hits a _truthy_ evaluation.
+
+### Setting and combining
+* `(cons "Carrie" novels)` adds Carrie to __start__, 
+* `(into to-seq from-seq)` puts the elements from one seq into another
+* `into` can be used to type-coerce `(into [] my-list)`
+* `(concat seq1 seq2)` takes all elements of 2 or more seqs and combines them into one. (treats strings as seqs of chars)
+
 
 # Conditional
 
@@ -179,6 +206,19 @@ https://learning.oreilly.com/library/view/getting-clojure/9781680506082/
 
 * Constants (string here) have to be literals, there is no evaluation allowed
 * The catch-all at the end is optional, not enforced and will error out if not included and there are no matching branches.
+
+
+## Predicates on Sequences
+
+### Some
+```clj
+(some predicate collection)
+```
+* Returns when the predicate function finds a true (Note: if you want to actually get the value of the evaluation back, your predicate function needs to do that)
+
+## Every-pred
+* `every-pred` takes one or more predicate-functions and returns a function f that returns true if all predicate functions return true.
+    
 
 # Exceptions try-catch throw
 
@@ -259,9 +299,13 @@ https://learning.oreilly.com/library/view/getting-clojure/9781680506082/
 * a falsy pre gives runtime exception
 * post checks the return value (which is denoted by %)
 
-## Function producing functions
 
+# Function producing functions
+
+## Apply
 * `(apply function arg-seq)` is like `(function arg0 arg1 arg2 ...)`
+
+## Partial
 * `partial` allows you to pass some arguments to a function, but not execute it, then you can pass it the rest of the arguments later and execute it
 
 ```clj
@@ -274,19 +318,21 @@ https://learning.oreilly.com/library/view/getting-clojure/9781680506082/
 (def slightly-cheap? (partial cheaper-than 5.99))
 ```
 
+## Complement
 * `complement` produces a function that returns the negation of another function `(def not-adventure? (complement adventure?))`
-* `every-pred` ands multiple predicate functions together
-    
+
+
 # Anonymous functions / function literals
 * `#()`
 * Denote arguments with `%1` (or just `%` if only one), `%2` etc.
 * Or `(fn [] stuff)`
 
+
 # Recursion
 
 ## Loops
 * All looping done through recursion: calling the function within the function
-* Should very rarely have to use it, there are higher level functions
+* Should very rarely have to use loop explicitly, there are higher level functions that implement it
 * But syntax is:
 
 ```clj
@@ -298,6 +344,21 @@ https://learning.oreilly.com/library/view/getting-clojure/9781680506082/
            (rest books) ; first argument of loop
            (+ total (:copies-sold (first books)))))) ; second arg of loop
 ```
+
+## Map
+```clj
+(map function collection)
+```
+* Apply a function to each element of a collection in turn.
+* When given more than one collections, they will be applied pairwise.
+* It can be used 'backwards', and be passed a collections of functions as arguments, and apply all of those functions in turn.
+
+## Reduce
+```clj
+(reduce function target source)
+```
+* Process each element of a collection and build a result
+
 
 # Let
 * Creates a scope where you can temporarily name things.
