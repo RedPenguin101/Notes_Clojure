@@ -48,6 +48,7 @@ https://learning.oreilly.com/library/view/getting-clojure/9781680506082/
 * `+ * - /`
 * `(quot 8 3) ;=> 2`
 * Force floats with decimals if needed
+* Do exponents with `(defn ** [x n] (reduce * (repeat n x)))`
 
 ## String functions
 * `str` concats strings with space
@@ -101,6 +102,20 @@ https://learning.oreilly.com/library/view/getting-clojure/9781680506082/
 
 ```
 * A vector can be used as a map with integer keys
+
+### Other Map stuff
+#### Zipmap
+```clj
+(zipmap [:a :b] [1 2])
+; => {:a 1 :b 2}
+```
+* Takes two seqs, returns a map where the first seqs are the keys and the second the values.
+
+#### Merge-with
+```clj
+(merge-with fn map1 map2)
+```
+* Returns a map that performs the function stated on all matching elements of the provided maps.
 
 ## Sets
 * In mathematical sense
