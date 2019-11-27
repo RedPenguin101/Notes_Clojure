@@ -131,6 +131,7 @@ https://learning.oreilly.com/library/view/getting-clojure/9781680506082/
 * `first`
 * `second`
 * `rest` (returns empty collection on 1 or 0 length seq)
+* `butlast` (returns all but the last element of a collection)
 * (Don't use these on maps generally, they are unordered)
 * `count`
 * `(nth books 2)` direct index, but the same as `(books 2)`
@@ -231,8 +232,13 @@ https://learning.oreilly.com/library/view/getting-clojure/9781680506082/
 ```
 * Returns when the predicate function finds a true (Note: if you want to actually get the value of the evaluation back, your predicate function needs to do that)
 
-## Every-pred
+### Every-pred
 * `every-pred` takes one or more predicate-functions and returns a function f that returns true if all predicate functions return true.
+
+### Other simple stuff
+* `empty?` returns true is seq is empty
+* (note: to test for not-empty, use `(seq x)` not `(not (empty? x))`
+* `not-empty` returns nil if empty, collection if not empty
     
 
 # Exceptions try-catch throw
