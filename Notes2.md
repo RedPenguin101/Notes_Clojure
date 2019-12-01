@@ -56,6 +56,7 @@ https://learning.oreilly.com/library/view/getting-clojure/9781680506082/
 * `(clojure.string/replace input find-reg replace)`
 * `(clojure.string/join ", " sequence)`
 * `(re-find regex string)` - find substring
+* `(re-seq regex string)` - returns lazy sequence of regex matches
 * `(clojure.string/trim text)` cleans whitespace from start and end
 
 
@@ -67,7 +68,7 @@ https://learning.oreilly.com/library/view/getting-clojure/9781680506082/
 * Can be hetero types
 * Contruct with `[1 2 3]` or `(vector 1 2 3)`
 * `(conj novels "Carrie")` adds Carrie to __end__, 
-* `(assoc [:title :by :published] 1 :author) ;=> [:title :author :published]`
+* assoc to 'replace' elements in a vector `(assoc [:title :by :published] 1 :author) ;=> [:title :author :published]`
 
 ## List
 * A linked list implementation
@@ -138,6 +139,7 @@ https://learning.oreilly.com/library/view/getting-clojure/9781680506082/
 * `contains?` (note: use this rather than `(book :fish)` to check if :fish is in book, since the latter returns nil both if the kw is not in the map, and if it is in the map with value nil. `contains?` returns true or false
 * `clojure.data/diff` acts on two sequences and returns 3: first with uniques in first, 2nd with uniques in second, third with matches `[nil nil "this matches]`
 
+
 #### Take(-while), Drop(-while)
 ```clj
 (take number collection)
@@ -153,6 +155,9 @@ https://learning.oreilly.com/library/view/getting-clojure/9781680506082/
 * `(into to-seq from-seq)` puts the elements from one seq into another
 * `into` can be used to type-coerce `(into [] my-list)`
 * `(concat seq1 seq2)` takes all elements of 2 or more seqs and combines them into one. (treats strings as seqs of chars)
+* `interleave` takes 2 or more collections and interleaves them
+* `interpose` is like interleave, but with a scalar as one of the args
+* `mapcat` is a combination of concat and map, concatenating the results of a map. Useful for flattening nested structures
 
 
 # Conditional
