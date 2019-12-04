@@ -86,12 +86,15 @@ Use if you want to use map on a collection of collections, then bundle the
  results of the maps to one long collection
 
 ## 2019-12-03
+### subs
+`(subs string start)` `(subs string start end)`
+
+Substring
 
 ## TODO
 * clojure.string/split-lines
 * reduced
 * clojure.set/intersection
-* subs
 * condp
 * concat
 * sort
