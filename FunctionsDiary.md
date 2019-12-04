@@ -42,25 +42,57 @@ Returns true if number is positive
 Best way to get an integer from a string
 
 ### vec vs. vector
+`(vec collection)` and `(vector a b & rest)`
+
+Basically use `vec` when you want to act on a collection, `vector` when you
+ want to create. Assume `(apply vec ...` would be similar to `vector`
 
 ### -> and ->> (thread first and thread last)
+`(-> x & forms)` 
 
-### mapv vs. map
+Inserts x as the _first_ argument (i.e. right after the function) of the
+ first form - then same for the next forms
+ 
+```clj
+(-> "foo" (str "bar") (str "baz")) ;=> "foobarbaz"
+;; expands out to
+(str (str "foo" "bar") "baz")
+```
 
-### reduced vs. reduce
+`(->> x & forms)`
+
+Inserts x as the _last_ argument (i.e. right before the bracket) of the
+ first form - then same for the next forms
+ 
+```clj
+(->> "foo" (str "bar") (str "baz")) ;=> "bazbarfoo"
+;; expands out to
+(str "baz" (str "bar" "foo"))
+```
+
+###  mapv vs. map
+`(mapv f & colls)`
+
+`mapv` returns a vector where normal `map` returns a sequence.
+
+`f` has to have an arity of the number of collections
+
+### mapcat vs. map
+`(mapcat f & colls)`
+
+Same as `(concat (map f & colls))`
+
+Use if you want to use map on a collection of collections, then bundle the
+ results of the maps to one long collection
 
 ## 2019-12-03
 
-### clojure.string/split-lines
-
-### subs
-
-### condp
-
-### concat
-
-### sort
-
-### clojure.set/intersection
-
-### .indexOf
+## TODO
+* clojure.string/split-lines
+* reduced
+* clojure.set/intersection
+* subs
+* condp
+* concat
+* sort
+* .indexOf
