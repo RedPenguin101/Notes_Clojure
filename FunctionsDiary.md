@@ -91,6 +91,10 @@ Use if you want to use map on a collection of collections, then bundle the
 
 Substring
 
+### Math/abs
+
+Absolute value
+
 ## TODO
 * clojure.string/split-lines
 * reduced
