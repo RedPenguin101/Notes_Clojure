@@ -95,6 +95,20 @@ Substring
 
 Absolute value
 
+## 2019-12-04
+### > < etc.
+Not limited to two arguments here, you can test whether a series of numbers is in decreasing order
+
+`(> 6 5 4 3 2) ;=> true`
+
+And use the same functionality to test whether a number is between two other numbers
+
+`(> 100 a 160)`
+
+You can also use them as a comparator for a `sort` function
+
+`(sort > [6 3 7 9 2]) ;=> (9 7 6 3 2)`
+
 ## TODO
 * clojure.string/split-lines
 * reduced
