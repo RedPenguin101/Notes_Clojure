@@ -109,6 +109,28 @@ You can also use them as a comparator for a `sort` function
 
 `(sort > [6 3 7 9 2]) ;=> (9 7 6 3 2)`
 
+### clojure.set/intersection
+`(clojure.set/intersection set1 set2)`
+
+Does what it says on the tin: returns a sequence of all elements set1 and set2 have in common.
+
+Used it as part of Advent of Code Day 3 to find matching pairs of coordinates in two sequences of points.
+
+### partition-by
+
+`(partition-by f coll)`
+
+Outputs a sequence of sequences grouped according to function output. So if the function applied to the elements of the collection are the same, those elements get grouped together.
+
+Used it in AoC Day 4 with `identity` when I wanted to count the occurances of digits in an integer:
+
+```clj
+(some #(= (count %) 2) (partition-by identity (seq code-str)))
+;; turns the code-string (of numbers) into a seq of chars, partitions those into groups of the same char.
+;; the some and lambda function test whether the length of any of the groups is equal to 2, implying there is a 'double'
+;; integer int the code-string
+```
+
 ## TODO
 * clojure.string/split-lines
 * reduced
