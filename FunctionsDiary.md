@@ -17,7 +17,7 @@ Quotient: the number of times the number is wholly divisible by the divisor. cf.
 
 Returns a lazy sequence of x, f(x), f(f(x)) etc.
 
-f has to take and return one argument
+__f has to take and return one argument__
 
 Use to build up a result where the following step depends on the output of the previous one
 
@@ -131,11 +131,21 @@ Used it in AoC Day 4 with `identity` when I wanted to count the occurances of di
 ;; integer int the code-string
 ```
 
+## 2019-12-07
+
+### Split lines
+`(clojure.string/split-lines seq)`
+Pretty simple, splits a string into a seq on `\n` or `\r\n`
+
+
+
+
+
 ## TODO
-* clojure.string/split-lines
 * reduced
-* clojure.set/intersection
 * condp
 * concat
 * sort
 * .indexOf
+* merge - marxama's day 6 solution
+
