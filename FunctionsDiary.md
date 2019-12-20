@@ -137,6 +137,19 @@ Used it in AoC Day 4 with `identity` when I wanted to count the occurances of di
 `(clojure.string/split-lines seq)`
 Pretty simple, splits a string into a seq on `\n` or `\r\n`
 
+## 2019-12-18
+
+### Frequencies
+in context of Moore Neighbourhood
+https://rosettacode.org/wiki/Conway%27s_Game_of_Life#Clojure
+
+### Some for checking if an element is in a sequence
+```clj
+(defn in? [collection element]
+  (some #(= element %) collection))
+```
+### Math/abs
+What you would expect
 
 
 
@@ -148,4 +161,5 @@ Pretty simple, splits a string into a seq on `\n` or `\r\n`
 * sort
 * .indexOf
 * merge - marxama's day 6 solution
+* mapcat, flatten (https://stuartsierra.com/2019/09/25/sequences-in-flatland)
 
