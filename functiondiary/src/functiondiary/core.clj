@@ -273,3 +273,16 @@
 (merge default-config set)
 ;; => {:setting :on, :value 150}
 
+;; ----------------------- separating out digits from an integer--------------
+
+; turn into a string
+(str 1234)
+; turn into a seq of chars
+(seq (str 1234))
+;use Character/digit to turn a char into an integer
+(Character/digit \2 10)
+
+(map #(Character/digit % 10) (str 1234))
+;; => (1 2 3 4)
+
+; note seq cast is implicit
