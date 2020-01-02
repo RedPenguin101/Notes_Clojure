@@ -286,3 +286,36 @@
 ;; => (1 2 3 4)
 
 ; note seq cast is implicit
+
+;; ===================== 2020-01-01 ==========================
+;; ------- map destructuring in fn args ----------------------
+
+(comment "pull keys out of a map in your func arg")
+
+(def thing {:hello "world" :foo "bar"})
+
+(defn nothing [{:keys [hello foo]}]
+  (str hello foo))
+
+(nothing thing)
+;; => "worldbar"
+
+(comment 
+  "you can pull the keys out of a map by name and still"
+  "use the full thing at the same time")
+
+(def snake {:body (list  [0 1] [0 2] [0 3] [0 4] [0 5]) :dir [0 5]})
+
+(defn move [{:keys [body dir] :as snake}] 
+  (assoc snake :body (conj body dir)))
+
+(move snake)
+
+(comment "pull out a specific value from your map, and further"
+         "destructure it")
+
+(defn overlaps? [{[head & body] :body}]
+  (contains? (set body) head))
+
+(overlaps? snake)
+(overlaps? (move snake)) 
