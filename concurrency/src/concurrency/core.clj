@@ -74,4 +74,98 @@
 
 (comment "A use case for futures is logging - chuck it on another thread")
 
+(comment
+  "DELAYS"
+  "define a task without executing it. Define with delay, force execution with force")
 
+(def jackson-5-delay
+  (delay (let [message "I'll be there"]
+           (println "First deref: " message)
+           message)))
+
+(force jackson-5-delay)
+
+(comment
+  "A delay use case: sending a message when one of a group of futures finishes"
+  
+  (def headshots ["serious.jpg" "fun.jpg" "playful.jpg"])
+  (defn email-user
+    [email-address]
+    (println "sending headshot to" email-address))
+  (defn upload-document [headshot] true)
+
+  (let [ notify (delay (email-user "hello@emmail.com"))]
+    (doseq [headshot headshots]
+      (future (upload-document headshot)
+              (force notify))))
+
+  "notice this avoid te mutual exclusion problem: the delay is guarding the
+  email server resource, and it can only be fired one")
+
+(comment
+  "PROMISES"
+  "Allow you to say you expect a result without saying what the task is,
+  or what you expect the results to be.
+  Create with promise, deliver with deliver, deref the result"
+  
+  (def my-promise (promise))
+  (deliver my-promise (+ 1 2))
+  (deref my-promise)
+
+  "id you had tried to deref before delivering, the program would block
+  until a result is delivered"
+  
+  "A use case for promises is to search a collection for a satisfactory element")
+
+(def yak-butter-international
+    {:store  "Yak Butter International"
+         :price 90
+             :smoothness 90})
+(def butter-than-nothing
+    {:store  "Butter Than Nothing"
+        :price 150
+           :smoothness 83})
+
+;; This is the butter that meets our requirements
+(def baby-got-yak
+    {:store  "Baby Got Yak"
+        :price 94
+           :smoothness 99})
+
+
+(defn mock-api-call
+    [result]
+      (Thread/sleep 1000)
+        result)
+
+
+(defn satisfactory?
+    "If the butter meets our criteria, return the butter, else return false"
+      [butter]
+        (and  (<= (:price butter) 100)
+                    (>= (:smoothness butter) 97)
+                           butter))
+
+(time (some (comp satisfactory? mock-api-call)
+            [yak-butter-international butter-than-nothing baby-got-yak]))
+
+; takes 3 seconds
+
+(comment "This creates a promise, then 3 futures, each of which evaluate a
+         butter and deliver it to the promise if it's satisfactory. the 
+         deref in the final line blocks the main thread until the promise is
+         delivered, and when it is, prints the result.
+         Note promises can only be written to once
+         Note as well that if the condition is never satisfied, it will never
+         time out unless you tell it to, like"
+         (let [p (promise)]
+           deref p 100 "timed out"))
+
+(time
+  (let [butter-promise (promise)]
+    (doseq [butter [yak-butter-international butter-than-nothing baby-got-yak]]
+      (future (if-let [satisfactory-butter (satisfactory? (mock-api-call butter))]
+                (deliver butter-promise satisfactory-butter))))
+    (println @butter-promise)))
+
+;takes 1 seconds
