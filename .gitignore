@@ -1,3 +1,4 @@
 pegthing/
 .nrepl-port
 .idea/
+*.lein-repl-history
