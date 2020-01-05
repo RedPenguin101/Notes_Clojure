@@ -1,4 +1,8 @@
-(ns concurrency.core)
+(ns concurrency.core
+  (:require [clojure.core.async 
+             :as a
+             :refer [>! <! >!! <!! go chan buffer close! 
+                     thread alts! alts!! timeout]]))
 
 
 
@@ -169,3 +173,38 @@
     (println @butter-promise)))
 
 ;takes 1 seconds
+
+;; ==========================  CORE ASYNC ========================================
+
+(comment "Create multiple independent processes within a single program
+         channels - like message queues - to communicate
+         go blocks and thread to pass them
+         parking and blocking
+         alts!!
+         callbacks")
+
+(comment 
+  "the process is at the heart of async - a concurrently running unit of logic
+  works with our mental model of the real world - the vending machine"
+  
+  "this is a process that just returns the message it receives"
+  
+  (def echo-chan (chan))
+  (go (println (<! echo-chan)))
+  (>!! echo-chan "ketchup")
+  
+  "The first line creates a channel, which is like a message queue
+  A process puts messages on the queue with >!! and take them with <!
+  Processes that put a message on the queue wait until it is taken
+  before contining, like a baton in a relay race
+  
+  The go block creates a new process, which executes everyhing in
+  the block body on a separate thread. This go block waits for a message
+  to be put on echo-chan, takes it, and prints it. The process then shuts down"
+  
+  "the 3rd line puts the string 'ketchup' on the channel. and returns true
+  Since the go block is waiting for the message, it will pick it up and 
+  execute it, so you'll see 'true ketchup' in the REPL
+  If you were to put a second message on the channel, it would block, 
+  because there's no 2nd process waiting to pick it up.")
+
