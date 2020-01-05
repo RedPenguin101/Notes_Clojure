@@ -99,7 +99,7 @@
     (println "sending headshot to" email-address))
   (defn upload-document [headshot] true)
 
-  (let [ notify (delay (email-user "hello@emmail.com"))]
+  (let [notify (delay (email-user "hello@emmail.com"))]
     (doseq [headshot headshots]
       (future (upload-document headshot)
               (force notify))))
@@ -172,16 +172,17 @@ time out unless you tell it to, like"
                   (deliver butter-promise satisfactory-butter))))
       (println @butter-promise)))
 
-  ;takes 1 seconds)
+  ;takes 1 seconds
+  )
 
 ;; ==========================  CORE ASYNC ========================================
 
 (comment "Create multiple independent processes within a single program
-         channels - like message queues - to communicate
-         go blocks and thread to pass them
-         parking and blocking
-         alts!!
-         callbacks")
+         > CHANNELS - like message queues - to communicate
+         > GO BLOCKS and thread to pass them
+         > parking and blocking
+         > alts!!
+         > commen patterns, queues and callbacks")
 
 (comment 
   "the process is at the heart of async - a concurrently running unit of logic
@@ -208,3 +209,229 @@ time out unless you tell it to, like"
   If you were to put a second message on the channel, it would block, 
   because there's no 2nd process waiting to pick it up.")
 
+(comment
+  "BUFFERING a channel is a way to say what the maximum queue capacity
+  of a channel is. Default is 0, so any process that puts a message on
+  a channel will have to wait until it's taken. If you set the buffer to two,
+  the process can put a message on, and continue to execute, possibly putting
+  another message on the queue, still executing. But if it tries to put a 3rd
+  message on the queue without something picking them up on the other side,
+  the process will block"
+  
+  (def echo-buffer (chan 2))
+  (>!! echo-buffer "ketchup")
+  ;; true
+  (>!! echo-buffer "ketchup")
+  ;; true
+  (>!! echo-buffer "ketchup")
+  ;; will block, buffer is full
+  )
+
+(comment
+  "BLOCKING AND PARKING and THREAD
+  Use only '<!!' or '>!!' outside go blocks
+  Inside go blocks you can use the single or double bang flavours
+  
+  The reason has to do with efficiency. Won't go into detail, but basically
+  go blocks get assigned to a common pool of threads. You computer has 2+cores
+  threads available. So if you start 100 go blocks, they will be distributed
+  around the 6 or so threads.
+  
+  blocking (!!) and parking (!) are two different types of waiting.
+  When told to block-wait, a thread will block any execution until the task it's
+  been assigned has been completed. When told to park-wait, the thread can switch
+  between two tasks it's been given as it sees fit.
+  
+  Use blocking puts and takes in your async when you thing the process will take
+  a long time. Instead of a go block, use a thread, which as it suggests spins up
+  a new thread for the process you give it. Do this so you don't jam up the thread
+  pool
+  
+  A thread returns a channel, and then
+  goes away and runs the process. When it's done executing the process it puts
+  the results of the process on that channel, where another process can pick it up"
+  
+  (thread (println (<!! echo-chan)))
+  (>!! echo-chan "mustard") 
+
+  (let [t (thread "chili")]
+    ;; returns channel t
+    (<!! t)))
+
+
+(comment "A HOTDOG VENDING MACHINE")
+
+(defn hot-dog-machine
+  "creates an in channel for recieving money and an out channel for dispensing
+  a hotdog. The go block waits fo input, then when it recieves it it puts a hot
+  dog on the out channel. It then returns the in and out channels as a vector
+  so they can be used by client code"
+  []
+  (let [in (chan)
+        out (chan)]
+    (go (<! in)
+        (>! out "hot dog"))
+    [in out]))
+
+(comment
+  (let [[in out] (hot-dog-machine)]
+    (>!! in "pocket lint")
+    (<!! out))
+  )
+
+
+(defn hot-dog-machine-v2
+  "A better hot dog machine that contains a set number of hot dogs, and stops
+  dispensing if the hot-dog count is 0, and checks whether the input is 3"
+  [hot-dog-count]
+  (let [in (chan)
+        out (chan)]
+    (go (loop [hc hot-dog-count]
+          (if (> hc 0)
+            (let [input (<! in)]
+              (if (= 3 input)
+                (do (>! out "hot dog")
+                    (recur (dec hc)))
+                (do (>! out "NOTHING")
+                    (recur hc))))
+            (do (close! in)
+                (close! out)))))
+    [in out]))
+
+(comment 
+  (let [[in out] (hot-dog-machine-v2 2)]
+    (>!! in "pocket lint")
+    (println (<!! out))
+    
+    (>!! in 3)
+    (println (<!! out))
+    
+    (>!! in 3)
+    (println (<!! out))
+    
+    (>!! in 3)
+    (<!! out))
+
+  "Doing a put and take within the same go block is a common pattern
+  when you're creating a PIPELINE of processes. You'll often see a process
+  outputing directly to the input channel of another process"
+
+  (let [c1 (chan)
+        c2 (chan)
+        c3 (chan)]
+    (go (>! c2 (clojure.string/upper-case (<! c1))))
+    (go (>! c3 (clojure.string/reverse (<! c2))))
+    (go (println (<! c3))) 
+    (>!! c1 "redrum"))
+  ;; => MURDER
+  
+  "We'll see later how pipelines can be used instead of callbacks later")
+
+(comment
+  "ALTS!! lets you use the result of the first successful channel operation
+  from a collections of operations. This is similar to the headshot example
+  above where we used delay to define a task, then execute it only when one
+  of several futures we defined hsa resolved")
+
+(defn upload
+  [headshot channel]
+  (go (Thread/sleep (rand 100)) ;faking the upload process
+      (>! channel headshot))) ;putting the headshot to the channel
+
+(comment
+  (let [c1 (chan)
+        c2 (chan)
+        c3 (chan)]
+    (upload "serious.jpg" c1)
+    (upload "fun.jpg" c2)
+    (upload "sassy.jpg" c3)
+    (let [[headshot channel] (alts!! [c1 c2 c3])]
+      (println "Sending headshot notitication for" headshot)))
+  
+  "The alts here is like saying 'try to do a blocking take on all
+  of these channels, and as soon as one of them suceeds return the taken
+  value and the winning channel"
+  
+  "You can use alts as mechanism for putting time limits on concurrent
+  operations by passing it a timeout channel"
+  
+  (timeout 20)
+  
+  "which will resolve after 20ms. If that's the first thing that resolves, then
+  this will be the thing that alts gets"
+
+  (let [c1 (chan)]
+    (upload "serious.jpg" c1)
+    (let [[headshot channel] (alts!! [c1 (timeout 20)]) ]
+      (if headshot
+        (println "sending headshot notification for" headshot)
+        (println "timeout")))))
+
+(comment
+  "you can use alts to specify put operations, by passing a nested vector"
+  
+  (let [c1 (chan) c2 (chan)]
+    (go (<! c2))
+    (let [[value channel] (alts!! [c1 [c2 "put me"]])]
+      (println value)
+      (= channel c2)))
+  
+  "this returns true true, the first from the result of putting 'put me' on c2
+  the second from checking the channel c2 is the returned channel")
+
+(comment 
+  "QUEUES"
+  "say you want to get random quotes from a website and write them to a file"
+  "you want to make sure only one is written at a time so they don't get garbled")
+
+(defn append-to-file
+  "Write a string to the end of a file"
+  [filename string]
+  (spit filename string :append true))
+
+(defn format-quote
+  "Deliniate the start and end of a quote"
+  [quote]
+  (str "=== BEGIN QUOTE ===\n" quote "=== END QUOTE ===\n\n"))
+
+(defn random-quote
+  []
+  (format-quote (slurp "https://www.braveclojure.com/random-quote")))
+
+(defn snag-quotes [filename num-of-quotes]
+  (let [c (chan)]
+    (go (while true (append-to-file filename (<! c))))
+    (dotimes [n num-of-quotes] (go (>! c (random-quote))))))
+
+(comment (snag-quotes "quotes.txt" 3))
+
+(comment
+  "PIPELINES INSTEAD OF CALLBACKS
+  Without channels, you have to express 'when x happens, do y' with callbacks
+  This can lead to callback hell, where you have dependencies between layers
+  of callbacks that aren't obvious, which makes it difficult to reason about
+  your code. You get around that with process pipelines
+  
+  In a pipeline, each unit of logic is isolated, and the communication between
+  processes is clearly defined")
+
+(defn upper-caser [in]
+  (let [out (chan)]
+    (go (while true (>! out (clojure.string/upper-case (<! in)))))
+    out))
+
+(defn reverser [in]
+  (let [out (chan)]
+    (go (while true (>! out (clojure.string/reverse (<! in)))))
+    out))
+
+(defn printer [in]
+  (go (while true (println (<! in)))))
+
+(def in-chan (chan))
+(def upper-caser-out (upper-caser in-chan))
+(def reverser-out (reverser upper-caser-out))
+(printer reverser-out)
+
+(comment
+  (>!! in-chan "redrum"))
