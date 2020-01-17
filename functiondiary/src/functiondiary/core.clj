@@ -319,3 +319,18 @@
 
 (overlaps? snake)
 (overlaps? (move snake)) 
+
+(comment "destructure a vector and maintain a symbol for the whole")
+
+(defn- gcd-on-point [[a b :as point]] true)
+
+
+;; =============== 2020-01-16 =================================
+
+(comment "remove is the opposite of filter")
+
+(remove nil? [nil 1 2 3 4 5])
+
+
+
+
