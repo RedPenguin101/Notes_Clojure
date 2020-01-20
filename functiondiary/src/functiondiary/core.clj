@@ -332,5 +332,24 @@
 (remove nil? [nil 1 2 3 4 5])
 
 
+;; ============== 2020-01-18 ============================
 
+(comment "rem is remainder. Different from mod in how it treats negatives")
 
+(rem -10 3)
+;; => -1
+
+(mod -10 3)
+;; => 2
+
+(comment "if-not is the negation of if")
+
+;; ============== 2020-01-20 ===============================
+
+(comment "regex with variable extraction")
+
+(def input-pattern #"<x=(-?\d+), y=(-?\d+), z=(-?\d+)>")
+
+(re-matches input-pattern "<x=5, y=-10, z=-123>")
+
+(comment "returns a vector of [(orig str) 5 -10 -123]")
