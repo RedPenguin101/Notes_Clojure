@@ -1,6 +1,20 @@
 (ns meander-tut.core
   (:require [meander.epsilon :as m]))
 
+(comment
+  "Meander is a clojure library for declarative data transformation.
+  It's goal is to make the inputs and outputs of data transformations
+  clear to the person reading the code.
+  
+  This document will talk about:
+  * Match: the simplest function: give it data, a pattern, and expression
+    and it will match the data on the pattern, and execute the expression
+  * Search and Scan: given a collection of things, search through it, scanning
+    for some pattern, and execute an expression
+  * Find: when you want to remember thing, use find")
+
+;; ======================= MATCH ============================
+
 (comment 
   "the match function is traditional pattern matching."
   (m/match x
@@ -11,46 +25,88 @@
   "and if some pattern i matches, it will execute expr_i")
 
 (m/match
- {:a 123 :b 456 :c "abc"}
+ {:a 123 :b 456 :c "abc"} ;; the data
  
- {:a ?a :b ?b :c ?c}
+ {:a ?a :b ?b :c ?c} ;; the pattern to match against
  
- {:target-x ?a
-  :target-y ?b
+ {:target-1 ?a ;; the expression to evaluate
+  :target-2 ?b
   :target-3 ?c
   :target-4 (+ ?a ?b)})
 
-(defn favorite-food-info [foods-by-name user]
-  (m/match
-    ;; for data x, creates a map containing the data
-   {:user user
-    :foods-by-name foods-by-name}
+;; match example from the official site
 
-    ;; the pattern
-    ;; define source 1 and source 2 scheme, with values and how
-    ;; they fit together
-    {:user {:name ?name
-            :favorite-food {:name ?food}}
-
-     :foods-by-name {?food {:popularity ?popularity
-                            :calories ?calories}}}
-
-    ;; the expression to execute
-    ;; define target scheme in terms of values
-    {:name ?name
-     :favorite {:food ?food
-                :popularity ?popularity
-                :calories ?calories}}))
+(def user  {:name :alice :favorite-food {:name :nachos}})
 
 (def foods {:nachos {:popularity :high
                      :calories :lots}
             :smoothie {:popularity :high
                        :calories :less}})
 
-(favorite-food-info foods {:name :alice
-                           :favorite-food {:name :nachos}})
+(defn favorite-food-info [foods-by-name user]
+  (m/match
+    ;; a common pattern: put input data into a single structure
+    {:user user
+     :foods-by-name foods-by-name}
+
+    ;; this part just describes the structure of the input data
+    ;; i.e. the pattern to match against.
+    {:user {:name ?name
+            :favorite-food {:name ?food}}
+
+     ;; the 2nd use of `?food` here creates an implicit join
+     ;; i.e. the `?food` here will be the same as the one in the
+     ;; 1st usage.
+     :foods-by-name {?food {:popularity ?popularity
+                            :calories ?calories}}}
+
+    ;; the output expression
+    {:name ?name
+     :favorite {:food ?food
+                :popularity ?popularity
+                :calories ?calories}}))
+
+(favorite-food-info foods user)
+
 ;; => {:name :alice, 
 ;;     :favorite {:food :nachos, :popularity :high, :calories :lots}}
+
+;; ======================== SEARCH ========================================
+
+(comment
+  "the above food example matched on alice's favourite food, nachos. What if we
+  gave here more than one favourite food?")
+
+(def user2 {:name :alice :favourite-foods [{:name :nachos}
+                                            {:name :smoothie}]})
+
+(comment
+  "we can't write this with match because what we want to do is search the user
+  data and scan through the collection of favourite foods.")
+
+(defn favourite-foods-info [foods-by-name user]
+  (m/search {:user user :foods-by-name foods-by-name}
+            
+            {:user
+             {:name ?name
+              :favourite-foods (m/scan {:name ?food})}
+             
+             :foods-by-name {?food {:popularity ?popularity
+                                    :calories ?calories}}}
+            
+            {:name ?name
+             :favourite {:food ?food
+                         :popularity ?popularity
+                         :calories ?calories}}))
+
+(favourite-foods-info foods user2)
+;; [{:name :alice, :favourite {:food :nachos, :popularity :high, :calories :lots}} 
+;;  {:name :alice, :favourite {:food :smoothie, :popularity :high, :calories :less})
+
+;; ========================== FIND ==============================================
+
+(comment
+  "")
 
 ;; ================ widget example from 
 ;; http://timothypratley.blogspot.com/2019/01/meander-answer-to-map-fatigue.html?m=1
