@@ -353,3 +353,18 @@
 (re-matches input-pattern "<x=5, y=-10, z=-123>")
 
 (comment "returns a vector of [(orig str) 5 -10 -123]")
+
+;; =============== 2020-01-27 =============================
+
+(comment 
+  "compare"
+  "returns 1 0 or -1")
+
+(compare 1 2) 
+;; => -1 because 1 is less than 2
+
+(compare 2 1)
+;; => 1
+
+(compare 1 1)
+;; => 0
