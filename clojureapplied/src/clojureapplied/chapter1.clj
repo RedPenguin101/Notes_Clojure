@@ -204,4 +204,94 @@
 (comment "you might want to contain an 'empty' object, that you will
          add stuff to")
 
+(comment "Modelling relationships"
+         
+         "Entities can refer to eachother by nesting, identifiers
+         and stateful resources. In stateful languages the last is
+         used a lot. In clojure much less.
+         
+         Nesting is when you just dump an entity within another one
+         it's good when the lifecycles of the two objects are connected")
 
+(defrecord Recipe [name author description ingredients steps servings])
+
+(defrecord Person [fname lname])
+
+(def toast (->Recipe "Toast" (->Person "Alex" "Miller")
+                     "Crispy Bread" ["Bread"] ["Put in toaster"]
+                     1))
+
+(comment
+  "This is one possible representation. But it considers the Recipe to
+  be 'primary'. You could equally have a model in which Author is at the
+  top, and their recipies are nested under them.
+  
+  If you want both to be top level entities you might be better off using
+  references to an identifier")
+
+(def people {"p1" (->Person "Alex" "Miller")})
+
+(def recipies {"r1" (->Recipe "Toast" "p1"
+                     "Crispy Bread" ["Bread"] ["Put in toaster"]
+                     1)})
+
+;; Note: you should generate your identifiers programatically!
+
+(comment 
+  "Stateful represntation CAN be used, and a use-case for it is when
+  you need to refer to an entity and have the relationship over time.
+  But it's rare to use state in Clojure at this low, data model layer,
+  instead reserving it for big chunks of application data")
+
+(comment "VALIDATING ENTITIES"
+         "This part focuses on prismatic's schema, but this is pre
+         spec. So just use that")
+
+(comment "DOMAIN OPERATIONS")
+
+(comment
+  "We need polymorphic dispatch a lot, so we can apply the proper
+  'flavour' of a named function based on it's type. Especially useful
+  when we have collections of many types of data
+  
+  Clojure has multimethods, and protocols. Protocols can dispatch on type
+  MM can dispatch on argument AND values of the data
+  
+  MMs have a `defmulti`, which defines the name and signature of the 
+  function, as well as the dispatch function, and one or more
+  'defmethods' which implement the actual behaviour"
+  
+  (defrecord Store [,,,])
+  (defmulti cost (fn [entity store] (class entity)))
+  
+  (defmethod cost Recipe [recipe store] ,,,)
+  (defmethod cost Ingredient [ingredient store] ,,,)
+
+  "You can have a :default defmethod for when none of the results match
+  (actually not sure if it works with type dispatch, assume it does).
+  Usually you'll want to throw and error if you come through to default."
+
+  (defmethod cost :default [u1 u2 q]
+    (if (= u1 u2)
+      1
+      (assert false (str "Unknown unit conversion from " u1 " to " u2))))
+  
+  "Protocols have a 'defprotocol' which defines the name and signature
+  of the function (can be several) and a 'extend-protocol' for the 
+  implementations. Kind of like traits in Rust. Protocols also have a 
+  default: Object"
+  
+  (defprotocol Cost (cost [entity store]))
+  
+  (extend-protocol Cost
+    Recipe
+    (cost [recipe store] ,,,) 
+    
+    Ingredient
+    (cost [ingredient store] ,,,))
+  
+  "Protocols are faster, and you can group related functions in one
+  protocol. MM are more flexible in how they dispatch.
+  
+  defmethods and extend-protocols don't need to be near their respective
+  defmulti and protocols, and they can be extended separately in time.")
