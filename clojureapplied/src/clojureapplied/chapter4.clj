@@ -375,3 +375,61 @@ sold-items
   ;;=> #{:alice :bobby :cindi :donnie}}
 
   "Probably avoid doing this, can get messy")
+
+
+(comment "Living with change")
+
+(comment
+  "The reason we are leary of state is that it's easy to shoot yourself 
+  in the foot. It happens when your programs get large, so it can be 
+  tough to articulate in a blog or even a book. It's something that impacts
+  large applications. But here are a few guidelines for managing your API")
+
+(comment
+  "validation - how and when to do it
+  
+  In the shopping example, grab ignores our API by grabbing things directly 
+  from inventory, which could lead to having negative items in stock. 
+  
+  This is why we put no-negative-values? as a validator. but this is a 
+  very expensive operation since it looks at every element of the map
+  
+  It's also used redundently, even when grab isn't called.
+  
+  A better way would be to construct a function and pass that around to
+  the components that require it. This is looked at in more depth in C7
+  
+  The main problem here is that state can be accessed directly by grab.
+  This is usually a bad idea. Make the storage private, and add to your
+  API a set of functions for accessing it in the way you want.
+  
+  you can make a def private with metadata"
+  
+  (def ^{:private true} inventory [,,,])
+  
+  "validators work fine for small things though, and they can be a
+  good centralized point of validation if you have many things which
+  can change your identity. It does mean you'll have to handle exceptions.")
+
+
+(comment
+  "Runtime state and program (application) state"
+
+  "We've been talking about application state mostly - ie the state
+  that resides in the problem domain. These should be accessed via APIs
+  which dictate how the state can be updated
+  
+  Runtime state relates to the software's execution. e.g. it might include
+  refernces to databases, config files etc. Again we look at it more in C7
+  but note that it's unavoidable, and minimizing it effectively means 
+  minimizing configurability.")
+
+(comment
+  "try to minimize application state. Just enough and no more is the right
+  amount. If it's there and you think you might be able to get along without
+  it, remove it.
+  
+  Your entities should mostly be immutable values, your functions should
+  mostly be pure. Keep functions that change state separate, and have them
+  ONLY change state. Treat them like little plague carriers, you want to 
+  fence them off.")
