@@ -7,6 +7,15 @@
   * leiningen: `[org.clojure/core.async ""]`
   * [github](https://github.com/clojure/core.async)
 
+
+### Data and IO
+* `[clojure.data.json]`
+* Cheshire: Fast and featureful JSON en/decoding
+  * `[cheshire.core :refer :all]`
+  * leiningen `[cheshire "5.10.0"]`
+  * [github](https://github.com/dakrone/cheshire)
+
+
 ### Utilities
 
 * Math Combinatorics `[clojure.math.combinatorics]`
