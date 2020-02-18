@@ -5,5 +5,7 @@
             :url "https://www.eclipse.org/legal/epl-2.0/"}
   :dependencies [[org.clojure/clojure "1.10.0"]
                  [org.clojure/core.async "0.7.559"]
+                 [com.stuartsierra/component  "0.4.0"]
+                 [environ  "1.1.0"]
                  [medley "1.2.0"]]
   :repl-options {:init-ns clojureapplied.core})
