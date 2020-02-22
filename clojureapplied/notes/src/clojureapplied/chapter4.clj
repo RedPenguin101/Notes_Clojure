@@ -314,6 +314,10 @@ sold-items
       ; since the transcation started
     item))
 
+(comment "I ran into issues here when the let was outside the dosync, but it
+         worked OK when it was INSIDE the dosync. I think it's because when its
+         outside, it could be picked up twice by multiple threads")
+
 (defn send-child-for-item 
   "sends a kid for an item, and once done puts them on a channel"
   [child item q]
