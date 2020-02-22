@@ -9,6 +9,11 @@ store/inventory
 store/sold-items
 ;; => #<Atom@f1dc666: {:bacon 1, :sausage 1, :eggs 1}>
 
+shopper/shopping-cart
+;; => #<Ref@5512a5c6: #{:sausage :bacon :eggs}>
+shopper/shopping-list
+;; => #<Ref@29e05dc7: #{}>
+
 (store/restock-all)
 store/inventory
 ;; => #<Atom@7658c469: {:bacon 10, :eggs 10, :sausage 10}>
