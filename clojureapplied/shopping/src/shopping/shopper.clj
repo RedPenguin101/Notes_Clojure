@@ -1,11 +1,14 @@
-(ns shopping.shopper)
+(ns shopping.shopper
+  (:require [shopping.store :as store]))
 
-(defn go-shopping
-  [shopping-list]
-  (loop [[item & items] shopping-list
-         cart []]
-    (if item
-      (recur items (conj cart item))
-      cart)))
+(defn shop-for-item [cart item]
+  (if (store/grab item)
+    (conj cart item)
+    cart))
 
-(go-shopping [:bacon :eggs :sausage])
+(defn go-shopping [shopping-list]
+  (reduce shop-for-item [] shopping-list))
+
+(comment 
+  (store/init {:bacon 10 :eggs 10 :sausage 10})
+  (go-shopping [:bacon :eggs :sausage]))

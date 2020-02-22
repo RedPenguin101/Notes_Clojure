@@ -1,6 +1,6 @@
-(ns shopping.core)
+(ns shopping.core
+  (:require [shopping.shopper :as shopper]
+            [shopping.store :as store]))
 
-(defn foo
-  "I don't do a whole lot."
-  [x]
-  (println x "Hello, World!"))
+(store/init {:bacon 10 :eggs 10 :sausage 10})
+(shopper/go-shopping [:bacon :sausage :eggs])

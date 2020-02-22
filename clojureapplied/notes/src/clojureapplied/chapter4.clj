@@ -102,6 +102,23 @@
   (set-validator! inventory no-negative-values?)
   (swap! inventory items))
 
+(comment
+  "NOTE: I don't think"
+  
+  (swap! inventory items)
+  
+  "actually works. swap! is"
+  
+  (swap! atom f & args)
+
+  "which sets the value of the atom to be"
+
+  (apply f atom-value args)
+  
+  "I think what is meant here is"
+  
+  (reset! inventory items))
+
 (defn grab [item]
   (if (in-stock? item)
     (swap! inventory update-in [item] dec)))
