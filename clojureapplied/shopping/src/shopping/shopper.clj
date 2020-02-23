@@ -1,6 +1,6 @@
 (ns shopping.shopper
   (:require [shopping.store :as store]
-            [clojure.core.async :refer [<!! >!! <! >! chan go go-loop]]))
+            [clojure.core.async :refer [>!! <! chan go go-loop]]))
 
 (def shopping-list (ref #{}))
 (def shopping-cart (ref #{}))
