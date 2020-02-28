@@ -2,12 +2,15 @@
 
 ## Core
 * Core async `[clojure.core.async]`
-  * leiningen: `[org.clojure/core.async ""]`
+  * leiningen: `[org.clojure/core.async "1.0.567"]`
   * [github](https://github.com/clojure/core.async)
+* spec: [clojure.spec.alpha :as spec]
+  * [clojure.spec.gen.alpha :as gen])
 
 
 ## Data and IO
 * `[clojure.data.json]`
+  * [org.clojure/data.json "0.2.7"]
 * Cheshire: Fast and featureful JSON en/decoding
   * `[cheshire.core :refer :all]`
   * leiningen `[cheshire "5.10.0"]`
@@ -17,6 +20,10 @@
 ## Utilities
 
 * Math Combinatorics `[clojure.math.combinatorics]`
+  * [org.clojure/math.combinatorics "0.1.6"]
+* numeric tower `[clojure.math.numeric-tower :as math]`
+  * [org.clojure/math.numeric-tower "0.0.4"]
+  * expt, gcd, lcm, floor, ceil round sqrt
 
 ## App design
 
