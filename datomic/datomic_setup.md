@@ -67,8 +67,8 @@ Each of these is an attribute associated with the movie entity
 
 ```
 {:db/ident :movie/title
- :db/valueType :db/type/string
- :db/cardinality :db/cardinality/one
+ :db/valueType :db.type/string
+ :db/cardinality :db.cardinality/one
  :db/doc "The title of the movie"}
 ```
 

@@ -24,7 +24,7 @@
 * Math / numbers
   * mod, rem
   * min, max, apply max
-  * \> and < to check if something is sorted
+  * `>` and `<` to check if something is sorted
 * in sorting
   * reverse
 
@@ -114,6 +114,13 @@ update in is the version for nested maps
 ```
 
 ### Combining and joining collections
+
+#### `zipmap` combines two arrays into a hashmap
+
+```clojure
+user=> (zipmap [:a :b :c :d :e] [1 2 3 4 5])
+{:a 1, :b 2, :c 3, :d 4, :e 5}
+```
 
 #### `concat`
 
@@ -281,6 +288,12 @@ is more aggressive, removes ALL nesting.
 
 (flatten [[1 2 3] [:x [:y :z]]])
 ;; => (1 2 3 :x :y :z)
+```
+
+### Into
+```clojure
+(into to from)
+(into to transducer from)
 ```
 
 ## Predicates
@@ -466,3 +479,4 @@ This demonstrates a useful technique for creating custom entity comparators that
 ## Misc
 
 * `(time ,,,)` times the execution of an operation.
+
