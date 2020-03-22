@@ -1,0 +1,117 @@
+#+TITLE: Transducers
+
+https://www.youtube.com/watch?v=WkHdqg_DBBs
+
+Pulling apart /reducing/ - the 3 or 4 things =reduce= does
+
+What is reduce? You can implement map and filter via reduce
+
+#+begin_src clojure
+  (def data (vec range 10))
+
+  (defn -map [f coll]
+    (reduce
+      (fn [acc v]
+        (conj acc (f v)))
+      '() coll))
+
+  (defn -filter [pred coll]
+    (reduce
+      (fn [acc v]
+        (if (pred v)
+          (conj acc (f v))
+          acc))
+      '() coll))
+
+  ;; these are composable
+
+  (->> data
+       (-map inc)
+       (-filter odd?))
+#+end_src
+
+Why do we need the reduce in the function? let's get it out
+
+#+begin_src clojure
+  (def data (vec range 10))
+
+  (defn -mapping [f]
+    (fn [acc v]
+      (conj acc (f v))) coll)
+
+  (reduce (-mapping inc) [] data)
+#+end_src
+
+But you've also go the conj in there, you're assuming it's a conjable collection. We could do it like this, and define a reducing function =rfn=
+
+#+begin_src clojure
+  (def data (vec range 10))
+
+  (defn -mapping [f job]
+    (fn [acc v]
+      (job acc (f v))) coll)
+
+  (def rfn (-mapping inc conj))
+
+  (reduce rfn [] data)
+#+end_src
+
+But it's kind of ugly; we're using the conj as part of our reducing function constructions. We want conj down with the reduce. So another layer of functions:
+
+#+begin_src clojure
+  (defn -mapping [f]
+    (fn [job]
+      (fn [acc v]
+        (job acc (f v)))))
+
+  (def rfn (-mapping inc))
+
+  (reduce (rfn conj) [] data)
+#+end_src
+
+Now at the bottom, we've wrapped up the job we want to do, the starting collection, and that's completely separate from our pipeline (the =inc= here)
+
+Filter follows the same pattern
+
+#+begin_src clojure
+  (defn -filtering [f]
+    (fn [job]
+      (fn [acc v]
+        (if (f v)
+          (job acc v)
+          acc))))
+#+end_src
+
+It's still composable, because the reducing functions both follow the same pattern: =(-mapping inc)= returns a function that expects a job, as does =(-filtering odd?)=. So you can compose with
+
+#+begin_src clojure
+  (def rfn (comp (-mapping inc)
+                 (-filtering odd?)))
+
+  (reduce (rfn conj) [] data)
+
+  (comment
+
+    ((comp f g) v) "is like"
+    (f (g v)) "so"
+    (rfn conj) "is equivalent to"
+
+    ((-mapping inc) ((-filtering odd?) conj))
+
+    ((fn [job]
+       (fn [acc v] (job acc (inc v))))
+     (fn [acc v]
+       (if (odd? v) (conj acc v))))
+
+    (fn [acc v]
+      ((fn [acc v] (if (odd? v) (conj acc v)))
+       acc (inc v))))
+#+end_src
+
+So passing in an accumulator and a value:
+- increments the value, 
+- passes the accumulator and incremented value into to the function 
+- which checks if the value is odd
+- and if so conjs itonto the accumulator
+
+Voila, an incrementor and a odd-filterer in a pipeline.

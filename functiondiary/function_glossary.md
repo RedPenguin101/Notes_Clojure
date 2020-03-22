@@ -113,6 +113,12 @@ update in is the version for nested maps
 ;;=> [{:name "James", :age 26} {:name "John", :age 44}]
 ```
 
+
+#### `select-keys` to take only specified keys from a map
+
+```clojure
+(select-keys map [:key1 :key2])
+```
 ### Combining and joining collections
 
 #### `zipmap` combines two arrays into a hashmap
@@ -159,7 +165,7 @@ A typical usecase is for overriding default values in configs, etc.
 ;; not the right example!
 ```
 
-#### `merge-with`
+#### `merge-with` is good for merging two maps
 
 lets you merge, with a function describing how the values for the same keys get processed.
 
@@ -238,6 +244,10 @@ See 'sorted-set-by' for patterns on creating comparators with `juxt`.
 ;; group integers based a predicate - common use case
 (group-by odd? (range 10))
 ;;=> {false [0 2 4 6 8], true [1 3 5 7 9]}
+
+;;group by a key in a map
+(group-by :user-id [{:user-id 1 :uri "baz"} {:user-id 2 :uri "foo"} {:user-id 1 :uri "bar"}])
+;;=> {1 [{:user-id 1 :uri "baz"}{:user-id 1 :uri "bar"}] 2 [{:user-id 2 :uri "foo"}]}
 ```
 
 #### Grouping by elements by their frequency
@@ -265,6 +275,13 @@ user=> (split-with (partial > 3) [1 2 3 2 1])
 
 user=> (split-with (partial > 10) [1 2 3 2 1])
 [(1 2 3 2 1) ()]
+```
+
+* `(partition-by identity coll)` will group like elements in a collection, 
+
+```clojure
+user=> (partition-by identity [1 1 2 1 1 1 3 3])
+[[1 1] [2] [1 1 1] [3 3]
 ```
 
 ### Flattening a sequence
@@ -450,7 +467,7 @@ user> (sorted-set-by > 3 5 8 2 1)
 
 ((comp f g) x)
 ;equivalent to
-(g (f x)))
+(g (f x))
 ```
 
 ### Juxt

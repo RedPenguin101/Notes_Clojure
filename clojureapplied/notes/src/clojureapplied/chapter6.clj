@@ -60,9 +60,9 @@
   They do this in two primary ways: invoking functions and putting messages
   on queues or channels
   
-  Your components should exposure data directly _so long as it's immutable_
+  Your components should expose data directly _so long as it's immutable_
   
-  Consider a knowlege engine component which persiste and manages rules 
+  Consider a knowlege engine component which persist and manages rules 
   about getting requests and delivering a response. The API might look like 
   this"
 
@@ -120,8 +120,7 @@
   
   You could make the protocol cover the entire API, but that's excessive
   Use the namespace to separate that, and the protocol for the minimal 
-  abstraction"
-  )
+  abstraction")
 
 (comment
   "Async APIs"
