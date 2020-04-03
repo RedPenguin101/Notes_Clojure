@@ -15,6 +15,8 @@
   * `[cheshire.core :refer :all]`
   * leiningen `[cheshire "5.10.0"]`
   * [github](https://github.com/dakrone/cheshire)
+* EDN
+  * `[clojure.edn]`
 
 
 ## Utilities

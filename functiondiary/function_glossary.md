@@ -41,6 +41,11 @@
 * rem vs. mod
 * compare
 
+## Snips to integrate
+
+From Scenic: get a nice string rep of an inst with `(str (.toInstant my-inst))`
+
+
 ## Destructuring
 
 ## Manipulating collections
@@ -397,6 +402,10 @@ Especially `(spit filename content :append true)`
 ```
 
 returns a vector of `[(orig str) 5 -10 -123]`
+
+### Check if a string includes a substring with `includes?`
+
+`(includes? string subs)`
 
 ## Numbers and Math (calling Java's Math/fns)
 
