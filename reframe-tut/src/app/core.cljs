@@ -4,8 +4,8 @@
 
 (defn app []
   [:<>
-   [(r/adapt-react-class Normalize)]
-   [(r/adapt-react-class Button) "hello"]
+   [:> Normalize]
+   [:> Button "hello"]
    [:div "Cheffy"]])
 
 (defn ^:dev/after-load start
