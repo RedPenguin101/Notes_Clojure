@@ -1,27 +1,30 @@
 (ns app.nav.views.authenticated
-  (:require ["@smooth-ui/core-sc" :refer [Box]]))
+  (:require ["@smooth-ui/core-sc" :refer [Box]]
+            [reagent.core :as r]))
 
 (defn authenticated []
-  [:> Box {:display         "flex"
-           :justify-content "flex-end"
-           :py              1}
-   [:> Box {:as   "a"
-            :href "#saved"
-            :ml   2
-            :pb   10}
-    "Saved"]
-   [:> Box {:as   "a"
-            :href "#recipies"
-            :ml   2
-            :pb   10}
-    "Recipies"]
-   [:> Box {:as   "a"
-            :href "#inbox"
-            :ml   2
-            :pb   10}
-    "Inbox"]
-   [:> Box {:as   "a"
-            :href "#profile"
-            :ml   2
-            :pb   10}
-    "Profile"]])
+  (let [nav-items [{:id   :saved
+                    :name "Saved"
+                    :href "#saved"}
+                   {:id   :recipies
+                    :name "Recipies"
+                    :href "#recipies"}
+                   {:id   :inbox
+                    :name "Inbox"
+                    :href "#inbox"}
+                   {:id   :become-a-chef
+                    :name "Chef"
+                    :href "#become-a-chef"}
+                   {:id   :profile
+                    :name "Profile"
+                    :href "#profile"}]]
+    [:> Box {:display         "flex"
+             :justify-content "flex-end"
+             :py              1}
+     (for [{:keys [id name href]} nav-items]
+       [(r/adapt-react-class Box) {:key  id
+                                   :as   "a"
+                                   :href href
+                                   :ml   2
+                                   :pb   10}
+        name])]))

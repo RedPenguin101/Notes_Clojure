@@ -60,3 +60,4 @@
 ** since our project is bigger we will split more horizontally and have a /nav/ folder with each of these namespaces. We'll also split views into a folder.
 ** Set up nav view component with a check for user
 ** Set up nav authenticated with smooth-ui Boxes (divs with exposed css) as links
+** refactor the authenticated component - note that =:>= doesn't work in the for
