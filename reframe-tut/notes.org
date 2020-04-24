@@ -25,3 +25,10 @@
 **** kibu/pushy is a router helper
 **** builds :app - note :modules with an :init-fn, will tell shadow to run init. This is why you don't need it in index
 ***** compiler options are for the reframe 10x panel
+* Video 05-smooth-ui
+** a style system based on react-components
+*** we already did the installs
+*** we'll have to to import Normalize, as a string import in core
+*** note the =<>= syntax - this allows you to return 2 elements in one components
+**** Normally you would do something like =[:div [:comp1] [:comp2]]= but this doesn't work with native react components like =Normalize=, so you have to wrap in =(r/adapt-react-class Normalize)=
+
