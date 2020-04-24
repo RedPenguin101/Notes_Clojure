@@ -1,6 +1,6 @@
 {:source-paths ["src"]
 
- :dependencies [[cider/cider-nrepl "0.25.0"]
+ :dependencies [[cider/cider-nrepl "0.22.0"]
                 [binaryage/devtools "0.9.10"]
                 [reagent "0.8.1"]
                 [re-frame "0.10.6"]
