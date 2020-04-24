@@ -33,3 +33,4 @@
 **** Normally you would do something like =[:div [:comp1] [:comp2]]= but this doesn't work with native react components like =Normalize=, so you have to wrap in =(r/adapt-react-class Normalize)=
 **** But this leaves a redundant div, so instead of =:div=, wrap in =:<>=, which will get allow you to get rid of it
 *** you can use =:>= as a shorthand for =(r/adapt-react-class)=
+*** style smooth-ui components with ={:variants "info"}= etc.

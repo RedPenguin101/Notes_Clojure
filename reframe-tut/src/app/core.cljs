@@ -5,7 +5,7 @@
 (defn app []
   [:<>
    [:> Normalize]
-   [:> Button "hello"]
+   [:> Button {:variant "info"} "hello"]
    [:div "Cheffy"]])
 
 (defn ^:dev/after-load start
