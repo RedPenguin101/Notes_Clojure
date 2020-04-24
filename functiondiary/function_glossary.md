@@ -45,11 +45,35 @@
 
 From Scenic: get a nice string rep of an inst with `(str (.toInstant my-inst))`
 
+From https://ask.clojure.org/index.php/8387/how-to-avoid-nil-values-in-maps?show=8387#q8387 - `cond->`, threaded cond
+
+```clojure
+(defn person
+  [line]
+  (cond-> {:person/name (name line)}  ;; non-optional stuff goes here
+    (height? line) (assoc :height (height line))
+    (weight? line) (assoc :weight (weight line))
+    ;; and so on for each optional thing
+  ))
+```
+https://clojuredocs.org/clojure.core/cond-%3E
+
+from clojurians slack:
+
+Instead of 
+```clojure
+(if (test? x)
+  (change x arg)
+  x)
+```
+
+```clojure
+(cond-> x (test? x) (change x arg)
+```
+
 
 ## Destructuring
-
 ## Manipulating collections
-
 ### Accessing things in collections
 
 * `(:keyword map)` returns the value of that key
@@ -375,6 +399,7 @@ It's handy if you want to use `some` to check multiple things.
 ## IO
 
 parse integer: `(Integer/parseInt string)`
+parse Float: `(Float/parseFloat)`
 
 (can also do `(Integer. string)`)
 
@@ -392,6 +417,8 @@ Especially `(spit filename content :append true)`
 
 * substring: `(sub string start & end)`
 * split lines `(clojure.string/split-lines "hello\nworld\r\nnew line")`
+* lower-case
+* check if a string contains a substring `(clojure.string/includes? s substr)`)
 
 `(re-matches pattern string)` is the regex finder. Returns the substring that matches the pattern. If the pattern has variable definitions, it will return a sequence of the substring, and the variables.
 
@@ -506,3 +533,6 @@ This demonstrates a useful technique for creating custom entity comparators that
 
 * `(time ,,,)` times the execution of an operation.
 
+## Dates
+
+parse a date from a string: (clojure.instant/read-instant-date d)

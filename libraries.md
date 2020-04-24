@@ -10,7 +10,8 @@
 
 ## Data and IO
 * `[clojure.data.json]`
-  * [org.clojure/data.json "0.2.7"]
+  * [org.clojure/data.json "1.0.0"]
+  * use `json/write-str` and `json/read-str` to xform to clojure data
 * Cheshire: Fast and featureful JSON en/decoding
   * `[cheshire.core :refer :all]`
   * leiningen `[cheshire "5.10.0"]`
@@ -43,3 +44,9 @@
   * `?`
   * leiningen `[levand/immuconf "0.1.0"]`
   * [github](https://github.com/levand/immuconf)
+
+## Other
+* Expound: spec message humanize
+  * `[expound "0.8.4"]`
+  * `[expound.alpha :as expound]`
+  * `(expound/expound)` and `(expound/expound-str)`
