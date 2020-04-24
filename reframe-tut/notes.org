@@ -50,3 +50,5 @@
 **** and a fn with 2 args (more on which later), but for now we jsut return the =initial-app-db=
 **** then import to core rf and the =app.db= ns
 **** in the =start= function, before render, add =(rf/dispatch identifier)=
+*** Note your app-db window doesn't show it yet - it is there, but the panel is async, it doesn't wait for your app to do something.
+** All event are async, so there can be a race condition. You can use =(rf/dispatch-sync)=. Use this for the initial load, but let everything else be async
