@@ -1,0 +1,27 @@
+#+TITLE: Notes on reframe
+
+* Video 04-app setup
+** Cloned repo
+** =npm install= to get deps
+** =npm run dev= to start
+
+** Runthrough of files 
+*** index is basic html
+**** note: script is different from reagent, don't need to call =onload=
+**** This is because of different config in =shadow-cljs=
+*** src
+**** core
+***** requires =reagent.core=
+***** same =app= as reagent
+***** =start= function has =^:dev/after-load= meta, which replaces the need to call that in =index.html=
+***** =init= just calls start. export means the name won't be truncated
+**** app.db - a big map. In prod this will be empty and you'll load state from remote API
+**** helpers: just some time stuff
+*** package.json
+**** deps: smooth-ui, styled comps and icons.
+**** dev-deps: react-flip-move and react-highlight-js are for the react panel
+*** shadow-cljs
+**** bidi is a router
+**** kibu/pushy is a router helper
+**** builds :app - note :modules with an :init-fn, will tell shadow to run init. This is why you don't need it in index
+***** compiler options are for the reframe 10x panel
