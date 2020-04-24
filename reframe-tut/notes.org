@@ -39,3 +39,14 @@
 *** do your overides, and use =merge=
 *** bring that into core with =ThemeProvider= from smooth, and add the themeprovider component 
 *** Note you have to nest components under the ThemeProvider if you want the changes to apply
+* Video 06-initialize-db
+** To bootstrap you need to register event handlers (later vid)
+** Also need to load data and display it
+*** You can see the results in the =app-db= tab of the react10 window (+ path inspector)
+** Register an event handler in app.db
+*** require =re-frame.core=
+*** register event handler with =(rf/reg-event=db)=
+**** This takes a unique identifier kw (e.g. =:initialize-db=) 
+**** and a fn with 2 args (more on which later), but for now we jsut return the =initial-app-db=
+**** then import to core rf and the =app.db= ns
+**** in the =start= function, before render, add =(rf/dispatch identifier)=
