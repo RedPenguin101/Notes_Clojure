@@ -31,4 +31,5 @@
 *** we'll have to to import Normalize, as a string import in core
 *** note the =<>= syntax - this allows you to return 2 elements in one components
 **** Normally you would do something like =[:div [:comp1] [:comp2]]= but this doesn't work with native react components like =Normalize=, so you have to wrap in =(r/adapt-react-class Normalize)=
-
+**** But this leaves a redundant div, so instead of =:div=, wrap in =:<>=, which will get allow you to get rid of it
+     

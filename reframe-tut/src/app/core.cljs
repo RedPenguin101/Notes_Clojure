@@ -3,7 +3,7 @@
             ["@smooth-ui/core-sc" :refer [Normalize Button]]))
 
 (defn app []
-  [:div
+  [:<>
    [(r/adapt-react-class Normalize)]
    [(r/adapt-react-class Button) "hello"]
    [:div "Cheffy"]])
