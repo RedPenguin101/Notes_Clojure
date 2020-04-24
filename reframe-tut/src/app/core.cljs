@@ -1,17 +1,19 @@
 (ns app.core
   (:require [reagent.core :as r]
-            ["@smooth-ui/core-sc" :refer [Normalize Button]]))
+            [app.theme :refer [cheffy-theme]]
+            ["@smooth-ui/core-sc" :refer [Normalize Button ThemeProvider]]))
 
 (defn app []
   [:<>
    [:> Normalize]
-   [:> Button {:variant "info"} "hello"]
-   [:div "Cheffy"]])
+   [:> ThemeProvider {:theme cheffy-theme}
+    [:> Button {:variant "info"} "hello"]
+    [:div "Cheffy"]]])
 
 (defn ^:dev/after-load start
   []
   (r/render [app]
-    (.getElementById js/document "app")))
+            (.getElementById js/document "app")))
 
 (defn ^:export init
   []
