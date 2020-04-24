@@ -61,3 +61,4 @@
 ** Set up nav view component with a check for user
 ** Set up nav authenticated with smooth-ui Boxes (divs with exposed css) as links
 ** refactor the authenticated component - note that =:>= doesn't work in the for
+** refactor again for some reason, more files

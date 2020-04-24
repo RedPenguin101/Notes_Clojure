@@ -1,6 +1,6 @@
 (ns app.nav.views.authenticated
   (:require ["@smooth-ui/core-sc" :refer [Box]]
-            [reagent.core :as r]))
+            [app.nav.views.nav-item :refer [nav-item]]))
 
 (defn authenticated []
   (let [nav-items [{:id   :saved
@@ -21,10 +21,5 @@
     [:> Box {:display         "flex"
              :justify-content "flex-end"
              :py              1}
-     (for [{:keys [id name href]} nav-items]
-       [(r/adapt-react-class Box) {:key  id
-                                   :as   "a"
-                                   :href href
-                                   :ml   2
-                                   :pb   10}
-        name])]))
+     (for [item nav-items]
+       [nav-item item])]))
