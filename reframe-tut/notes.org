@@ -62,3 +62,11 @@
 ** Set up nav authenticated with smooth-ui Boxes (divs with exposed css) as links
 ** refactor the authenticated component - note that =:>= doesn't work in the for
 ** refactor again for some reason, more files
+* Video 08-nav-events
+** Now we need to update our app-db to update the 'active-nav' and 'active-page' on button clicks
+** We will write an event handler using =reg-event-db= again
+*** recall before that an event has a unique id and a fn which takes 2 args
+*** the first arg is the db
+*** the 2nd arg is a vector [event-name value], passed by =rf/dispatch=
+*** so for example =[:set-active-nav :recipies]=
+** Create a dispatch in each of the button clicks in nav.authenticated and nav-items (:on-click)
