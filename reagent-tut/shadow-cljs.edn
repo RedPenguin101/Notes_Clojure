@@ -1,0 +1,21 @@
+{:source-paths ["src"]
+
+ :dependencies [[binaryage/devtools "0.9.10"]
+                [cider/cider-nrepl "0.25.0-SNAPSHOT"]
+                [reagent "0.8.0"]]
+
+ :nrepl {:port 3333}
+
+ :builds
+ {:app {:target     :browser
+        :output-dir "public/js"
+        :asset-path "/js"
+
+        :modules
+        {:main
+         {:entries [giggin.core]}}
+
+        :devtools
+        {:after-load giggin.core/main
+         :http-root  "public"
+         :http-port  3000}}}}
