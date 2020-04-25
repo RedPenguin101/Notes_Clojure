@@ -84,3 +84,8 @@
 * Video 10-pages
 ** Set up the infra for our other views, putting a dummy div in each.
 ** add a pages function to core, with a Grid>Row>Col stack which contains the nav and our active page (which we'll get via a subscription)
+* Video 11-public
+** fix the nav for the public view
+*** copy over the authenticated view
+*** add in login and sign up, take out saved and inbox
+*** import to nav and change the mocking so you can see it
