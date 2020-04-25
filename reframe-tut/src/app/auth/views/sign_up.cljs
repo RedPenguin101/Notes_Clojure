@@ -36,7 +36,7 @@
          [:> Box {:py 1 :pr 2}
           [:a {:href     "#sign-up"
                :on-click #(rf/dispatch [:set-active-nav :log-in])}
-           "Already have an account? Log in"]]
+           "Already have an account? Log in!"]]
          [:> Box
           [:> Button {:on-click #(rf/dispatch [:sign-up @values])}
            "Sign up"]]]]
