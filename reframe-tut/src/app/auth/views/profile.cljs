@@ -35,4 +35,20 @@
           [:> Box {:display         "flex"
                    :justify-content "flex-end"}
            [:> Button {:on-click #(rf/dispatch [:update-profile @values])}
-            "Save"]]]]]])))
+            "Save"]]]
+         [:> Box {:background-color "white"
+                  :border-radius    10
+                  :p                3
+                  :pt               1
+                  :mt               40}
+          [:> Typography {:variant     "h4"
+                          :py          10
+                          :font-weight 700}
+           "Danger Zone"]
+          [:> Box {:display         "flex"
+                   :justify-content "flex-end"}
+           [:> Button {:variant  "danger"
+                       :on-click #(when (js/confirm
+                                          "This will delete your account")
+                                    (rf/dispatch [:delete-account]))}
+            "Delete Account"]]]]]])))

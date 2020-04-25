@@ -125,3 +125,4 @@
 ** Add Profile view
 ** Add events for log out and update profile
 ** Add sub for active-user-profile to put the current first/last name in the personal info boxes
+** Add event for delete account

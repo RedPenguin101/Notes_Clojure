@@ -47,3 +47,12 @@
   (fn [{:keys [db]} _]
     {:db       (assoc db :auth nil)
      :dispatch [:set-active-nav :recipies]}))
+
+(reg-event-fx
+  :delete-account
+  (fn [{:keys [db]} _]
+    (let [uid (get-in db [:auth :uid])]
+      {:db       (-> db
+                     (assoc :auth nil)
+                     (update-in [:users] dissoc uid))
+       :dispatch [:set-active-nav :recipies]})))
