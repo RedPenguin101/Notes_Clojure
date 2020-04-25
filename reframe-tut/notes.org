@@ -100,3 +100,4 @@
 ** We want to make the normal 'uname and password' form fields so people can log in.
 *** we create some local state that means we can track what the user is typing - with a reagent atom.
 *** Create the form inputs, where the :value dereferences the atom, and the on-change function updates the atom, so when the ser types the atom will be updated and the display will show the updated atom value.
+** If you go to the login page now you won't be able to type. this is because you have local state, which evals into a 'Form 2 Component' - that means you need a 'guardian function' after the local state - otherwise the whole thing will be rerun and the initial state will be reset on each input.
