@@ -6,8 +6,8 @@
             ["@smooth-ui/core-sc" :refer [Row Col Box Typography Button]]))
 
 (defn profile []
-  (let [values (r/atom {:first-name ""
-                        :last-name  ""})]
+  (let [active-user-profile @(rf/subscribe [:active-user-profile])
+        values              (r/atom active-user-profile)]
     (fn []
       [:<>
        [page-nav {:center "Profile"
