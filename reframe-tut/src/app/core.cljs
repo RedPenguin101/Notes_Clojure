@@ -7,10 +7,10 @@
             [app.nav.subs]
             [app.nav.views.nav :refer [nav]]
 
-            [app.auth.views.profile]
-            [app.inbox.views.inboxes]
-            [app.recipies.views.recipies]
-            [app.become-a-chef.views.become-a-chef]
+            [app.auth.views.profile :refer [profile]]
+            [app.inbox.views.inboxes :refer [inboxes]]
+            [app.recipies.views.recipies :refer [recipies]]
+            [app.become-a-chef.views.become-a-chef :refer [become-a-chef]]
 
             [app.theme :refer [cheffy-theme]]
             ["@smooth-ui/core-sc" :refer [Normalize Button ThemeProvider]]))
