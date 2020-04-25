@@ -1,0 +1,69 @@
+#+TITLE: Shadow-cljs
+
+https://shadow-cljs.github.io/docs/UsersGuide.html
+
+* Intro
+For compiling clojurescript projects. You provide the essential config, it takes care of the rest, using pre-defined targets.
+** High level overview - 2 parts
+*** shadow-cljs clojure library. It does the build
+*** shadow-cljs npm package provides interface for running build from command line
+**** You can use clojure library with leiningen or cli-tools, but better to use npm package
+** Basic Workflow
+*** Define builds in =shadow-cljs.edn= in project root, with a =:target= property specifying what preset will be run (e.g. browser, node.js, chrome extension)
+*** When you build you can instruct either prod (=release=) or dev (=watch=)
+*** =watch= will monitor and recompile your code.
+*** =release= will optimise
+** Concepts
+*** JVM Classpath - a virtual filesystem. Specify with =:source-paths= in config
+*** Server Mode - required for =watch=. 
+**** Provides a websocket endpoint that builds connect to, as well as REPL endpoints
+**** You'll have to restart when dependencies change.
+* Installation
+** via NPM (the right way)
+*** install node.js, npm, Java SDK 8
+*** install shadow-cljs
+#+begin_src bash
+  $ npm install --save-dev shadow-cljs
+  $ npm install -g shadow-cljs
+#+end_src
+* Usage
+** General 
+*** run =npm run dev= or =shadow-cljs watch app= while developing
+*** run =shadow-cljs release app= to package a release
+** Command line
+*** use directly, like =shadow-cljs help=
+*** or npx, like =npx shadow-cljs help=
+** Build tool integration: Don't
+** Running Clojure Code
+* REPL
+* Configuration with shadow-cljs.edn
+** Create a default with =shadow-cljs init=
+** The key properties are =source-paths=, =dependencies=, =builds=
+*** Source paths set your JVM classpath, allowing you to find source files.
+*** for clj(s) deps, use syntax =[library-name "version string"]=
+*** 
+** You'll need a package.json to manage javascript deps
+*** you can run =npm init= to create one
+** User config - things like cider will require their own deps. You can add them to =~/.shadow-cljs/config.edn= if you want to apply them to all projects.
+*** You can set =:nrepl false= in user config if you don't need a REPL
+** nREPL
+*** you can config nrepl (including providing middleware) with ={:nrepl {:port 9000 :middleware [...]}}=
+*** cider-nrepl will be automatically used if it's included in dependencies.
+*** set the inital ns with ={:nrepl {:init-ns my.stuff}}=
+*** nrepl always starts in clojure mode.
+* Targeting the browser
+** a basic build will have
+#+begin_src clojure
+  {:app {:target     :browser
+         :output-dir "public/assets/app/js" ;; compiler output
+         :asset-path "/assets/app/js"
+         ;; relative path from webservers
+         ;; root to resources in :output-dir
+
+         :modules {:main {:entries [my.app]
+                          ;; or
+                          :init-fn my.app/init}}}
+   ;; don't worry about these yet
+   }
+
+#+end_src
