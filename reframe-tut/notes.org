@@ -73,3 +73,10 @@
 * Video 09-nav-subs
 ** We see a console error that 'Each child in a list should have a unique key prop', pointing to oue nav items.
 *** We do have a key in there, but react expects them at the 'top level', whatever that means. In the video it's fixed by putting metadata in the nav item.
+** Looking at the app-db, notice the state is 1 click behind. 
+*** This is because components only rerender when they know something has changed
+*** we need to register a /subscription/ so all of our components know when something has changed
+*** in subs.cljs add a =reg-sub= (register subscription). The form is the same as an event: it takes an event name (here =:set-active-nav= and a function where the first arg is the db and the 2nd is a vector of any params. Here our function will /get/ the active nav from the db instead of assoc-ing it 
+*** Then register the ns in core
+*** add the subscription to the /authenticated/ namespace with =rf/subscribe= (note you'll have to deref, because it returns an atom), and populate it into the nav-item map
+*** Note as well we also don't need that metadata thing now because we're creating the map directly, and we can just put the key in there manually
