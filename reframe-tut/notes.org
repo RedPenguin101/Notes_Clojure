@@ -115,3 +115,6 @@
 *** so we need to change out event register from =reg-event-db= to =reg-event-fx=, meaning instead of returning a function which takes the db as the first argument, you take a /map/ (called the cofx) which has a db key and a dispatch key ={:db db :dispatch [:set-active-nav :saved]}=.
 *** This is mirrored in the return value - i.e. your event will no longer return the db map, but that includes the db as a kv pair
 *** In the case of the happy path for log in, the return map will also include a :dispatch key saying =[:set-active-map :saved]=
+* Video 16-log-in-subs
+** Replace the mock we have in the nav view with a subscription called :logged-in?
+** Create the sub in /auth.subs/ and call it nav
