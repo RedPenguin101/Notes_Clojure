@@ -96,3 +96,7 @@
 *** define a page-nav component which takes a map of left center and right
 *** the structure will be a Flexbox[left center right]
 *** put it in each page (with just the center for now)
+* Video 13-log-in
+** We want to make the normal 'uname and password' form fields so people can log in.
+*** we create some local state that means we can track what the user is typing - with a reagent atom.
+*** Create the form inputs, where the :value dereferences the atom, and the on-change function updates the atom, so when the ser types the atom will be updated and the display will show the updated atom value.
