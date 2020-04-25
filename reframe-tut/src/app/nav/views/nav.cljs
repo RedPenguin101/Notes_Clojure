@@ -3,7 +3,7 @@
             [app.nav.views.public :refer [public]]))
 
 (defn nav []
-  (let [user false]
+  (let [user true]
     (if user
       [authenticated]
       [public])))

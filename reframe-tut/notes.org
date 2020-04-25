@@ -90,3 +90,9 @@
 *** add in login and sign up, take out saved and inbox
 *** import to nav and change the mocking so you can see it
 ** create dummy login and signup views and bring them into core
+* Video 12-page-nav
+** Let's do the header for each page. A header will have a left, right (optional) and a Center (the page name)
+*** Set up a component /page-nav/ ns.
+*** define a page-nav component which takes a map of left center and right
+*** the structure will be a Flexbox[left center right]
+*** put it in each page (with just the center for now)

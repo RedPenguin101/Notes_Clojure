@@ -1,4 +1,5 @@
-(ns app.recipies.views.recipies)
+(ns app.recipies.views.recipies
+  (:require [app.components.page-nav :refer [page-nav]]))
 
 (defn recipies []
-  [:div "recipies"])
+  [page-nav {:center "Recipies"}])
