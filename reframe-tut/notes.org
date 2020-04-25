@@ -107,6 +107,11 @@
 ** Refactor form-group to its own component
 * Video 15-login-event-handler
 ** Create auth event for :log-in and dispatch it from the button press, passing in the local variable values
-** check against the app-db for user and correct password (obv would do this server side in real app)
-** Do error handling
-
+*** check against the app-db for user and correct password (obv would do this server side in real app)
+*** Do error handling
+** We want to set the page to 'saved' after successful login
+*** We have the =:set-active-nav= event for this
+*** But you shouldn't dispatch an event from another event because that means this event is no longer a pure function (sic)
+*** so we need to change out event register from =reg-event-db= to =reg-event-fx=, meaning instead of returning a function which takes the db as the first argument, you take a /map/ (called the cofx) which has a db key and a dispatch key ={:db db :dispatch [:set-active-nav :saved]}=.
+*** This is mirrored in the return value - i.e. your event will no longer return the db map, but that includes the db as a kv pair
+*** In the case of the happy path for log in, the return map will also include a :dispatch key saying =[:set-active-map :saved]=

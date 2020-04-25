@@ -1,18 +1,20 @@
 (ns app.auth.events
-  (:require [re-frame.core :refer [reg-event-db]]))
+  (:require [re-frame.core :refer [reg-event-fx]]))
 
-(reg-event-db
+(reg-event-fx
   :log-in
-  (fn [db [_ {:keys [email password]}]]
+  (fn [{:keys [db]} [_ {:keys [email password]}]]
     (let [user              (get-in db [:users email])
           correct-password? (= password (get-in user [:profile :password]))]
       (cond
         (not user)
-        (assoc-in db [:errors :email] "User not found")
+        {:db (assoc-in db [:errors :email] "User not found")}
 
         (not correct-password?)
-        (assoc-in db [:errors :email] "Wrong Password")
+        {:db (assoc-in db [:errors :email] "Wrong Password")}
 
-        correct-password? (-> db
-                              (assoc-in [:auth :uid] email)
-                              (update-in [:errors] dissoc :email))))))
+        correct-password?
+        {:db       (-> db
+                       (assoc-in [:auth :uid] email)
+                       (update-in [:errors] dissoc :email))
+         :dispatch [:set-active-nav :saved]}))))
