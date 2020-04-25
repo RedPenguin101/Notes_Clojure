@@ -118,3 +118,5 @@
 * Video 16-log-in-subs
 ** Replace the mock we have in the nav view with a subscription called :logged-in?
 ** Create the sub in /auth.subs/ and call it nav
+* Video 17-sign-up
+** Create the sign-up view
