@@ -1,0 +1,128 @@
+#+TITLE: Notes on reframe
+
+* Video 04-app setup
+** Cloned repo
+** =npm install= to get deps
+** =npm run dev= to start
+
+** Runthrough of files 
+*** index is basic html
+**** note: script is different from reagent, don't need to call =onload=
+**** This is because of different config in =shadow-cljs=
+*** src
+**** core
+***** requires =reagent.core=
+***** same =app= as reagent
+***** =start= function has =^:dev/after-load= meta, which replaces the need to call that in =index.html=
+***** =init= just calls start. export means the name won't be truncated
+**** app.db - a big map. In prod this will be empty and you'll load state from remote API
+**** helpers: just some time stuff
+*** package.json
+**** deps: smooth-ui, styled comps and icons.
+**** dev-deps: react-flip-move and react-highlight-js are for the react panel
+*** shadow-cljs
+**** bidi is a router
+**** kibu/pushy is a router helper
+**** builds :app - note :modules with an :init-fn, will tell shadow to run init. This is why you don't need it in index
+***** compiler options are for the reframe 10x panel
+* Video 05-smooth-ui
+** a style system based on react-components
+*** we already did the installs
+*** we'll have to to import Normalize, as a string import in core
+*** note the =<>= syntax - this allows you to return 2 elements in one components
+**** Normally you would do something like =[:div [:comp1] [:comp2]]= but this doesn't work with native react components like =Normalize=, so you have to wrap in =(r/adapt-react-class Normalize)=
+**** But this leaves a redundant div, so instead of =:div=, wrap in =:<>=, which will get allow you to get rid of it
+*** you can use =:>= as a shorthand for =(r/adapt-react-class)=
+*** style smooth-ui components with ={:variants "info"}= etc.
+** smooth-ui has its own build in theme, which you can overide
+*** setup a new file /theme.cljs/, importing the smooth theme
+*** do your overides, and use =merge=
+*** bring that into core with =ThemeProvider= from smooth, and add the themeprovider component 
+*** Note you have to nest components under the ThemeProvider if you want the changes to apply
+* Video 06-initialize-db
+** To bootstrap you need to register event handlers (later vid)
+** Also need to load data and display it
+*** You can see the results in the =app-db= tab of the react10 window (+ path inspector)
+** Register an event handler in app.db
+*** require =re-frame.core=
+*** register event handler with =(rf/reg-event=db)=
+**** This takes a unique identifier kw (e.g. =:initialize-db=) 
+**** and a fn with 2 args (more on which later), but for now we jsut return the =initial-app-db=
+**** then import to core rf and the =app.db= ns
+**** in the =start= function, before render, add =(rf/dispatch identifier)=
+*** Note your app-db window doesn't show it yet - it is there, but the panel is async, it doesn't wait for your app to do something.
+** All event are async, so there can be a race condition. You can use =(rf/dispatch-sync)=. Use this for the initial load, but let everything else be async
+* Video 07-nav
+** Layout - in a reframe you would have namespaces 
+*** events
+*** views
+*** subs
+** since our project is bigger we will split more horizontally and have a /nav/ folder with each of these namespaces. We'll also split views into a folder.
+** Set up nav view component with a check for user
+** Set up nav authenticated with smooth-ui Boxes (divs with exposed css) as links
+** refactor the authenticated component - note that =:>= doesn't work in the for
+** refactor again for some reason, more files
+* Video 08-nav-events
+** Now we need to update our app-db to update the 'active-nav' and 'active-page' on button clicks
+** We will write an event handler using =reg-event-db= again
+*** recall before that an event has a unique id and a fn which takes 2 args
+*** the first arg is the db
+*** the 2nd arg is a vector [event-name value], passed by =rf/dispatch=
+*** so for example =[:set-active-nav :recipies]=
+** Create a dispatch in each of the button clicks in nav.authenticated and nav-items (:on-click)
+* Video 09-nav-subs
+** We see a console error that 'Each child in a list should have a unique key prop', pointing to oue nav items.
+*** We do have a key in there, but react expects them at the 'top level', whatever that means. In the video it's fixed by putting metadata in the nav item.
+** Looking at the app-db, notice the state is 1 click behind. 
+*** This is because components only rerender when they know something has changed
+*** we need to register a /subscription/ so all of our components know when something has changed
+*** in subs.cljs add a =reg-sub= (register subscription). The form is the same as an event: it takes an event name (here =:set-active-nav= and a function where the first arg is the db and the 2nd is a vector of any params. Here our function will /get/ the active nav from the db instead of assoc-ing it 
+*** Then register the ns in core
+*** add the subscription to the /authenticated/ namespace with =rf/subscribe= (note you'll have to deref, because it returns an atom), and populate it into the nav-item map
+*** Note as well we also don't need that metadata thing now because we're creating the map directly, and we can just put the key in there manually
+** Now we have our active nav property as part of the nav-item, we can use it for formatting.
+* Video 10-pages
+** Set up the infra for our other views, putting a dummy div in each.
+** add a pages function to core, with a Grid>Row>Col stack which contains the nav and our active page (which we'll get via a subscription)
+* Video 11-public
+** fix the nav for the public view
+*** copy over the authenticated view
+*** add in login and sign up, take out saved and inbox
+*** import to nav and change the mocking so you can see it
+** create dummy login and signup views and bring them into core
+* Video 12-page-nav
+** Let's do the header for each page. A header will have a left, right (optional) and a Center (the page name)
+*** Set up a component /page-nav/ ns.
+*** define a page-nav component which takes a map of left center and right
+*** the structure will be a Flexbox[left center right]
+*** put it in each page (with just the center for now)
+* Video 13-log-in
+** We want to make the normal 'uname and password' form fields so people can log in.
+*** we create some local state that means we can track what the user is typing - with a reagent atom.
+*** Create the form inputs, where the :value dereferences the atom, and the on-change function updates the atom, so when the ser types the atom will be updated and the display will show the updated atom value.
+** If you go to the login page now you won't be able to type. this is because you have local state, which evals into a 'Form 2 Component' - that means you need a 'guardian function' after the local state - otherwise the whole thing will be rerun and the initial state will be reset on each input.
+** Not part of the above - but we have the initialise db in the wrong place - we had it in 'start' so it was being called on every re-compile (and reseting the state). We should have it in the initialize so it's only called at the initialization.
+** Now we need the login button. Nothing new here
+* Video 14-form-group
+** Refactor form-group to its own component
+* Video 15-login-event-handler
+** Create auth event for :log-in and dispatch it from the button press, passing in the local variable values
+*** check against the app-db for user and correct password (obv would do this server side in real app)
+*** Do error handling
+** We want to set the page to 'saved' after successful login
+*** We have the =:set-active-nav= event for this
+*** But you shouldn't dispatch an event from another event because that means this event is no longer a pure function (sic)
+*** so we need to change out event register from =reg-event-db= to =reg-event-fx=, meaning instead of returning a function which takes the db as the first argument, you take a /map/ (called the cofx) which has a db key and a dispatch key ={:db db :dispatch [:set-active-nav :saved]}=.
+*** This is mirrored in the return value - i.e. your event will no longer return the db map, but that includes the db as a kv pair
+*** In the case of the happy path for log in, the return map will also include a :dispatch key saying =[:set-active-map :saved]=
+* Video 16-log-in-subs
+** Replace the mock we have in the nav view with a subscription called :logged-in?
+** Create the sub in /auth.subs/ and call it nav
+* Video 17-sign-up
+** Create the sign-up view, with a dispatch to the sign-up event
+** Add the :sign-up event
+* Video 18-profile
+** Add Profile view
+** Add events for log out and update profile
+** Add sub for active-user-profile to put the current first/last name in the personal info boxes
+** Add event for delete account
