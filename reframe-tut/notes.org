@@ -83,3 +83,4 @@
 ** Now we have our active nav property as part of the nav-item, we can use it for formatting.
 * Video 10-pages
 ** Set up the infra for our other views, putting a dummy div in each.
+** add a pages function to core, with a Grid>Row>Col stack which contains the nav and our active page (which we'll get via a subscription)

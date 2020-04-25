@@ -13,14 +13,28 @@
             [app.become-a-chef.views.become-a-chef :refer [become-a-chef]]
 
             [app.theme :refer [cheffy-theme]]
-            ["@smooth-ui/core-sc" :refer [Normalize Button ThemeProvider]]))
+            ["@smooth-ui/core-sc" :refer [Normalize Button ThemeProvider
+                                          Grid Row Col]]))
 "el"
 
+(defn pages [page-name]
+  (case page-name
+    :profile       [profile]
+    :become-a-chef [become-a-chef]
+    :inboxes       [inboxes]
+    :recipies      [recipies]
+    [recipies]))
+
 (defn app []
-  [:<>
-   [:> Normalize]
-   [:> ThemeProvider {:theme cheffy-theme}
-    [nav]]])
+  (let [active-nav @(rf/subscribe [:active-nav])]
+    [:<>
+     [:> Normalize]
+     [:> ThemeProvider {:theme cheffy-theme}
+      [:> Grid (:fluid false)
+       [:> Row
+        [:> Col
+         [nav]
+         [pages active-nav]]]]]]))
 
 (defn ^:dev/after-load start
   []
