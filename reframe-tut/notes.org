@@ -121,3 +121,5 @@
 * Video 17-sign-up
 ** Create the sign-up view, with a dispatch to the sign-up event
 ** Add the :sign-up event
+* Video 18-profile
+** Add Profile view
