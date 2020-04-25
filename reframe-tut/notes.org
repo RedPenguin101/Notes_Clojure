@@ -89,3 +89,4 @@
 *** copy over the authenticated view
 *** add in login and sign up, take out saved and inbox
 *** import to nav and change the mocking so you can see it
+** create dummy login and signup views and bring them into core

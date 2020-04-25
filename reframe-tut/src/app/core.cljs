@@ -8,6 +8,8 @@
             [app.nav.views.nav :refer [nav]]
 
             [app.auth.views.profile :refer [profile]]
+            [app.auth.views.sign-up :refer [sign-up]]
+            [app.auth.views.log-in :refer [log-in]]
             [app.inbox.views.inboxes :refer [inboxes]]
             [app.recipies.views.recipies :refer [recipies]]
             [app.become-a-chef.views.become-a-chef :refer [become-a-chef]]
@@ -20,6 +22,8 @@
 (defn pages [page-name]
   (case page-name
     :profile       [profile]
+    :sign-up       [sign-up]
+    :log-in        [log-in]
     :become-a-chef [become-a-chef]
     :inboxes       [inboxes]
     :recipies      [recipies]
