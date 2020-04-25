@@ -1,5 +1,5 @@
 (ns app.auth.events
-  (:require [re-frame.core :refer [reg-event-fx]]))
+  (:require [re-frame.core :refer [reg-event-fx reg-event-db]]))
 
 (reg-event-fx
   :log-in
@@ -34,3 +34,16 @@
                                     :saved   #{}
                                     :inboxes {}}))
      :dispatch [:set-active-nav :saved]}))
+
+(reg-event-db
+  :update-profile
+  (fn [db [_ profile]]
+    (let [uid (get-in db [:auth :uid])]
+      (update-in db [:users uid :profile]
+                 merge (select-keys profile [:first-name :last-name])))))
+
+(reg-event-fx
+  :log-out
+  (fn [{:keys [db]} _]
+    {:db       (assoc db :auth nil)
+     :dispatch [:set-active-nav :recipies]}))

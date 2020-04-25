@@ -123,3 +123,4 @@
 ** Add the :sign-up event
 * Video 18-profile
 ** Add Profile view
+** Add events for log out and update profile
