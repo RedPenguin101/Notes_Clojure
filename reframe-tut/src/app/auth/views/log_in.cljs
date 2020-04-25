@@ -1,5 +1,6 @@
 (ns app.auth.views.log-in
   (:require [app.components.page-nav :refer [page-nav]]
+            [app.components.form-group :refer [form-group]]
             [reagent.core :as r]
             [re-frame.core :as rf]
             ["@smooth-ui/core-sc" :refer [Box Row Col FormGroup Label Input Button]]))
@@ -11,20 +12,16 @@
       [:> Row {:justify-content "center"}
        [:> Col {:xs 12 :sm 6}
         [page-nav {:center "Log In"}]
-        [:> FormGroup
-         [:> Label {:html-for :email} "Email"]
-         [:> Input {:control   true
-                    :id        :email
-                    :type      "email"
-                    :value     (:email @values)
-                    :on-change #(swap! values assoc :email (.. % -target -value))}]]
-        [:> FormGroup
-         [:> Label {:html-for :password} "Password"]
-         [:> Input {:control   true
-                    :id        :password
-                    :type      "password"
-                    :value     (:password @values)
-                    :on-change #(swap! values assoc :password (.. % -target -value))}]]
+
+        (form-group {:id     :email
+                     :label  "Email"
+                     :type   :email
+                     :values values})
+        (form-group {:id     :password
+                     :label  "Password"
+                     :type   :password
+                     :values values})
+
         [:> Box {:display         "flex"
                  :justify-content "space-between"}
          [:> Box {:py 1 :pr 2}

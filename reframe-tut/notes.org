@@ -103,4 +103,6 @@
 ** If you go to the login page now you won't be able to type. this is because you have local state, which evals into a 'Form 2 Component' - that means you need a 'guardian function' after the local state - otherwise the whole thing will be rerun and the initial state will be reset on each input.
 ** Not part of the above - but we have the initialise db in the wrong place - we had it in 'start' so it was being called on every re-compile (and reseting the state). We should have it in the initialize so it's only called at the initialization.
 ** Now we need the login button. Nothing new here
+* Video 14-form-group
+** Refactor form-group to its own component
 
