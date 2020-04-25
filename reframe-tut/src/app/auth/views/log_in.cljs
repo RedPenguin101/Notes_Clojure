@@ -1,7 +1,8 @@
 (ns app.auth.views.log-in
   (:require [app.components.page-nav :refer [page-nav]]
             [reagent.core :as r]
-            ["@smooth-ui/core-sc" :refer [Row Col FormGroup Label Input]]))
+            [re-frame.core :as rf]
+            ["@smooth-ui/core-sc" :refer [Box Row Col FormGroup Label Input Button]]))
 
 (defn log-in []
   (let [initial-values {:email "" :password ""}
@@ -23,6 +24,15 @@
                     :id        :password
                     :type      "password"
                     :value     (:password @values)
-                    :on-change #(swap! values assoc :password (.. % -target -value))}]]]
+                    :on-change #(swap! values assoc :password (.. % -target -value))}]]
+        [:> Box {:display         "flex"
+                 :justify-content "space-between"}
+         [:> Box {:py 1 :pr 2}
+          [:a {:href     "#sign-up"
+               :on-click #(rf/dispatch [:set-active-nav :sign-up])}
+           "New to Cheffy? Create an account."]]
+         [:> Box
+          [:> Button {:on-click #(js/console.log "log-in")}
+           "Log In"]]]]
        ]))
   )
