@@ -81,3 +81,5 @@
 *** add the subscription to the /authenticated/ namespace with =rf/subscribe= (note you'll have to deref, because it returns an atom), and populate it into the nav-item map
 *** Note as well we also don't need that metadata thing now because we're creating the map directly, and we can just put the key in there manually
 ** Now we have our active nav property as part of the nav-item, we can use it for formatting.
+* Video 10-pages
+** Set up the infra for our other views
