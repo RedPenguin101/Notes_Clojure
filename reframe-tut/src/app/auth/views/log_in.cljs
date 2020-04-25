@@ -29,7 +29,7 @@
                :on-click #(rf/dispatch [:set-active-nav :sign-up])}
            "New to Cheffy? Create an account."]]
          [:> Box
-          [:> Button {:on-click #(js/console.log "log-in")}
+          [:> Button {:on-click #(rf/dispatch [:log-in @values])}
            "Log In"]]]]
        ]))
   )

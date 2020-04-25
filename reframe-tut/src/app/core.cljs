@@ -8,6 +8,7 @@
             [app.nav.views.nav :refer [nav]]
 
             [app.auth.views.profile :refer [profile]]
+            [app.auth.events]
             [app.auth.views.sign-up :refer [sign-up]]
             [app.auth.views.log-in :refer [log-in]]
             [app.inbox.views.inboxes :refer [inboxes]]

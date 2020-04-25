@@ -105,4 +105,8 @@
 ** Now we need the login button. Nothing new here
 * Video 14-form-group
 ** Refactor form-group to its own component
+* Video 15-login-event-handler
+** Create auth event for :log-in and dispatch it from the button press, passing in the local variable values
+** check against the app-db for user and correct password (obv would do this server side in real app)
+** Do error handling
 
