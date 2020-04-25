@@ -28,4 +28,5 @@
              :justify-content "flex-end"
              :py              1}
      (for [item nav-items]
+       ^{:key (:id item)}
        [nav-item item])]))

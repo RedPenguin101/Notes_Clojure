@@ -70,3 +70,6 @@
 *** the 2nd arg is a vector [event-name value], passed by =rf/dispatch=
 *** so for example =[:set-active-nav :recipies]=
 ** Create a dispatch in each of the button clicks in nav.authenticated and nav-items (:on-click)
+* Video 09-nav-subs
+** We see a console error that 'Each child in a list should have a unique key prop', pointing to oue nav items.
+*** We do have a key in there, but react expects them at the 'top level', whatever that means. In the video it's fixed by putting metadata in the nav item.
