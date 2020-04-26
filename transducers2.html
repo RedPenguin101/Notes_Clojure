@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2020-04-26 Sun 20:39 -->
+<!-- 2020-04-26 Sun 20:42 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Transducers for people who don't understand the Clojure docs</title>
@@ -243,10 +243,346 @@ for the JavaScript code in this tag.
 <body>
 <div id="content">
 <h1 class="title">Transducers for people who don't understand the Clojure docs</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org7a1045b">1. Two types of functions</a>
+<ul>
+<li><a href="#org7674f13">1.1. Transformers</a></li>
+<li><a href="#org49060c5">1.2. Reducers</a></li>
+</ul>
+</li>
+<li><a href="#orgb541f22">2. Transducers</a></li>
+<li><a href="#org1ccbf3f">3. Transducers in Clojure</a></li>
+<li><a href="#org041c8dd">4. What about <code>reduce</code> in Clojure?</a></li>
+<li><a href="#org16df60e">5. Transducible processes</a></li>
+<li><a href="#org6d805f0">6. Why bother?</a></li>
+<li><a href="#org991006e">7. Other stuff</a>
+<ul>
+<li><a href="#org8ca02dc">7.1. Transducers are composable</a></li>
+<li><a href="#org9db392a">7.2. Eduction</a></li>
+</ul>
+</li>
+<li><a href="#org7c38bbf">8. Todo</a></li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org7a1045b" class="outline-2">
+<h2 id="org7a1045b"><span class="section-number-2">1</span> Two types of functions</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+Consider two types of functions.
+</p>
+</div>
+
+<div id="outline-container-org7674f13" class="outline-3">
+<h3 id="org7674f13"><span class="section-number-3">1.1</span> Transformers</h3>
+<div class="outline-text-3" id="text-1-1">
+<p>
+The first is a function that takes a value and returns a changed (transformed) value. This is a <b>Transformer</b>.
+</p>
+
+<pre class="example">
+xf(a) -&gt; a'
+</pre>
+
+<p>
+'increment' is a transformer: 
+</p>
+
+<pre class="example">
+inc(3) -&gt; 4
+</pre>
+
+<p>
+so is 'filter odd': 
+</p>
+
+<pre class="example">
+filter-odd(3) -&gt; 3
+filter-odd(2) -&gt; (doesn't return anything)
+</pre>
+
+<p>
+You can throw streams of inputs at these transformers and they return streams of transformed ouput. 
+</p>
+
+<pre class="example">
+1 2 3 4 5 -&gt;     inc(a)    -&gt; 2 3 4 5 6
+1 2 3 4 5 -&gt; filter-odd(a) -&gt; 1 3 5
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org49060c5" class="outline-3">
+<h3 id="org49060c5"><span class="section-number-3">1.2</span> Reducers</h3>
+<div class="outline-text-3" id="text-1-2">
+<p>
+The second type of function is one that takes two values and combines them in some way to get an output. Because this reduces two inputs to one output, we'll call this a <b>Reducer</b>.
+</p>
+
+<pre class="example">
+rf(A, b) -&gt; A'
+</pre>
+
+<p>
+The way this will work with a stream of inputs is to 'step' through them. The function will interpret the first input as <code>b</code>, and it will execute against an <code>A</code> (that you have to tell it) to produce <code>A'</code>. 
+</p>
+
+<p>
+Then it will take the <i>next</i> input as <code>b</code>, and it will take the <code>A'</code> it just calculated as its new <code>A</code>. We'll call A the <b>Accumulator</b>, because with each application it accumulates the effects of the input stream into a single value. 
+</p>
+
+<p>
+So, given a stream of <code>[b1 b2 b3 b4]</code> and an initial <code>A</code>, the reducer will do the following:
+</p>
+
+<pre class="example">
+rf(A, b1) -&gt; A1
+rf(A1, b2) -&gt; A2
+rf(A2, b3) -&gt; A3
+rf(A3, b4) -&gt; A4
+</pre>
+
+<p>
+What this means is that when all inputs have been passed through the function, you're left with a final value for <code>A</code> which has accumulated all the inputs in the stream.
+</p>
+
+<p>
+One example of a reducer is 'add', a function that will take a stream of  inputs and add them all together, then when the stream is finished, return the added number (i.e. a single value)
+</p>
+
+<pre class="example">
+1 2 3 4 5 -&gt; add(0, b) -&gt; 15
+</pre>
+<p>
+(note, the 0 is the initial value of the accumulator you have to pass in)
+</p>
+
+<p>
+Another is 'conj', a reducer that will take the next value in a sequence and conjugate it onto a accumulated collection.
+</p>
+
+<pre class="example">
+1 2 3 4 5 -&gt; conj([], b) -&gt; [1 2 3 4 5]
+</pre>
+<p>
+(again, the <code>[]</code> is the initial empty list that is the first value of the accumulator)
+</p>
+
+<p>
+We're imposing a special restriction on our definition of reducers: they <b>can't change the input <code>b</code> in any way</b>, they can only take it as it is and combine it with the accumulator.
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgb541f22" class="outline-2">
+<h2 id="orgb541f22"><span class="section-number-2">2</span> Transducers</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+But let's say we want to do something like increment values and <i>then</i> add them together:
+</p>
+
+<pre class="example">
+1 2 3 4 5 -&gt; f(0, b) -&gt; 20
+</pre>
+
+<p>
+In other words we want to do both a transform and a reduce.
+</p>
+
+<p>
+In <i>other</i> other words, we want a function that takes a transformer and a reducer, and <i>injects</i> the transformer into the middle of the reduce operations like this:
+</p>
+
+<pre class="example">
+rf(A, xf(b)) -&gt; A'
+</pre>
+
+<p>
+So that before the input <code>b</code> is applied to the accumulator by <code>rf</code>, it's first transformed by <code>xf</code>.
+</p>
+
+<p>
+We'll define this as a <b>Transducer</b>, because it takes a transformer and a reducer, and combines them.
+</p>
+
+<pre class="example">
+t(rf xf) -&gt; (rf(A, xf(b)) -&gt; A')
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org1ccbf3f" class="outline-2">
+<h2 id="org1ccbf3f"><span class="section-number-2">3</span> Transducers in Clojure</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+In Clojure a transducer is defined as a function that turns a reducer into another reducer, with a transformer in the middle. 
+</p>
+
+<p>
+That's pretty much the same as we had it above, except the the transformer function is already embedded in it, so you only need to pass in the reducer, not both reducer and transformer.
+</p>
+
+<p>
+A transducer in clojure is a transformer <i>waiting</i> for a reducer to be used with.
+</p>
+
+<p>
+In general, you'll create a transducer by expressing a transformer with <i>no arguments to apply it to</i>. You can do this with many of standard library functions that will work on a collection.
+</p>
+
+<p>
+For example you'll create a transducer with 'increment' embedded in it with <code>(map inc)</code>
+</p>
+
+<p>
+You can apply the transducer using <code>transduce</code>. 
+</p>
+
+<pre class="example">
+(transduce transducer reducer collection)
+</pre>
+
+<p>
+To replicate the 'increment and add' pattern from above, we would do
+</p>
+
+<pre class="example">
+(transduce (map inc) + [1 2 3 4 5])
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org041c8dd" class="outline-2">
+<h2 id="org041c8dd"><span class="section-number-2">4</span> What about <code>reduce</code> in Clojure?</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+You might say this looks pretty similar to <code>reduce</code> in clojure with an extra step. The following does exactly the same thing as the transduce code above, just with the transducer and reducer combined.
+</p>
+
+<pre class="example">
+(reduce #(+ %1 (inc %2)) 0 [1 2 3 4 5])
+</pre>
+
+<p>
+That's definitely correct! <code>reduce</code> takes a function that is either a reducer on its own (<code>rf(A, b)</code> like <code>+</code>), or a function that is a reducer combined with a transformer (<code>rf(A, xf(b))</code>, like the anonymous function in the above).
+</p>
+
+<p>
+All a transducer does is allow you to explicitly separate the transforming and reducing parts.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org16df60e" class="outline-2">
+<h2 id="org16df60e"><span class="section-number-2">5</span> Transducible processes</h2>
+<div class="outline-text-2" id="text-5">
+<p>
+It's not just <code>reduce</code> that is uses reducers though, they're all over the place. Consider <code>into</code>, which takes a collection of inputs, and puts them into a another collection you pass it - i.e. just like the Accumulator. 
+</p>
+
+<p>
+<code>sequence</code> has a reduction in it; it accumlates a lazy sequence from its inputs.
+</p>
+
+<p>
+A reducer, generalised, is anything which is taking input step-by-step and putting it somewhere else, where it accumulates. Putting stuff on an async channel with <code>chan</code> is a reduction.
+</p>
+
+<p>
+And <i>all</i> of these can be given a transducer, which <i>injects</i> transformations to be applied to the inputs before the reduction bit happens. So for example
+</p>
+
+<pre class="example">
+(chan 1 my-transducer)
+</pre>
+
+<p>
+creates a channel, where before input is put to the channel, the transformations that the transducer encapsulates are done.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org6d805f0" class="outline-2">
+<h2 id="org6d805f0"><span class="section-number-2">6</span> Why bother?</h2>
+<div class="outline-text-2" id="text-6">
+<p>
+What's the upside of doing this? Mostly it allows you to decouple transformations from the concrete contexts they're being used in, and express the transformation in general terms.
+</p>
+
+<p>
+Transformers are really nice things because they don't really care about how they receive their input stream, or where they put the result: a collection, a bytestream, a channel etc. They don't need any context.
+</p>
+
+<p>
+If you define a transformation like <code>filter odd</code> in these terms, you can reuse them all over the place, because you are expressing the transformation you want in a very general way: "hey is this thing odd? No? Then don't let it out."
+</p>
+
+<p>
+Compare this most of the reducers we used above, which <i>are</i> tied to specific implementations - mostly we saw reducers that work with collections, like <code>conj</code> <code>into</code> <code>sequence</code>. We also saw <code>chan</code>, where the implementation is specifically about a async channel.
+</p>
+
+<p>
+Think of a reducer in terms of 'moving the stuff I'm getting to a particular place'.
+</p>
+
+<p>
+Being able to put transformers into transducers (things which can be injected into any reduction) means that you can reuse them in many contexts!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org991006e" class="outline-2">
+<h2 id="org991006e"><span class="section-number-2">7</span> Other stuff</h2>
+<div class="outline-text-2" id="text-7">
+</div>
+<div id="outline-container-org8ca02dc" class="outline-3">
+<h3 id="org8ca02dc"><span class="section-number-3">7.1</span> Transducers are composable</h3>
+<div class="outline-text-3" id="text-7-1">
+<p>
+You might notice that there's a difference between transformers and reducers: transformers are composable, and reducers are not. That is, you can chain together a bunch of transformers into a single pipeline and throw values through it. 
+</p>
+
+<p>
+You can chain several transducers together with <code>(comp t1 t2 t3)</code>.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org9db392a" class="outline-3">
+<h3 id="org9db392a"><span class="section-number-3">7.2</span> Eduction</h3>
+<div class="outline-text-3" id="text-7-2">
+<p>
+'Normal' <code>reduce</code> packages the reducer and transformers together into it's function input, and you pass in the collection.
+</p>
+
+<p>
+You can do this the other way round: apply the transducer to the collection directly, then pass it to reduce. The function for this is <code>eduction</code>
+</p>
+
+<pre class="example">
+(reduce + 0 (eduction xf coll))
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org7c38bbf" class="outline-2">
+<h2 id="org7c38bbf"><span class="section-number-2">8</span> Todo</h2>
+<div class="outline-text-2" id="text-8">
+<ul class="org-ul">
+<li>Early termination</li>
+</ul>
+</div>
+</div>
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Joe</p>
-<p class="date">Created: 2020-04-26 Sun 20:39</p>
+<p class="date">Created: 2020-04-26 Sun 20:42</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>
