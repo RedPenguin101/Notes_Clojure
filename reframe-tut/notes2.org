@@ -1,0 +1,58 @@
+#+TITLE: Re-frame - explanation from the github repo
+
+* Reframe is a pattern for writing SPAs in CLJS using reagent
+* Reframe is a functional framework - it's about data and functions that transform that data
+** Data is the ultimate in late binding
+** Functions also start out as data because homoiconicity
+** Events are data, effects are data, dom is data. Functions are looked up via data.
+** Interceptors (data) are preferred over middleware (higher order functions).
+** Arrival of data coordinates the calling of functions (reactive system)
+* Reactive systems
+** Live updating web apps
+** alterting and realtime dashboards
+** stream processes
+** rule engine
+** common theme: data co-oridinates computation (code), not the other way around
+* App state is kept in one place, like an inmemory database.
+* A view is a function of the app state. =v = f(s)=. A function literally takes a function, which reads the app state and returns dom objects.
+* Re-frame implements a core loop, where each domino triggers the next:
+** 1. Event dispatch =(rf/dispatch)= 
+*** something happens, user clicks a button, websocket recieves a message. This triggers the event.
+** 2. Event handling =(rf/reg-event-fx)=
+*** the event handler determines how the world should change as the result of the event. Most commonly the 'app-state' will be changed
+** 3. Effect handling - the side effect determined by the event handler happens, again usually the app state changes
+** 4. Query - data is extracted from the app state and make available to functions. =sub-reg=
+** 5. View - View Functions (aka reagent components) that results in a data in hiccup format
+** 6. DOM - handled by reagent, turns hiccup to HTML
+* An Event is a vector, where the first element is the name of the event (a keyword), and the others are any data that travel with the event.
+* You /register/ an event with =(rf/reg-event-fx event-name function)=
+** The function must take 2 args: a coeffects map (contains the state of the world, including db) and the event to handle.
+** It returns a maps of coeffects, with keys :db (function for updating the app-state), as well as any consequent event that should be triggered
+
+#+begin_src clojure
+  (rf/reg-event-fx
+    :delete-item
+    (fn [coeffects event] ;; use destructuring to state this more concisely
+      (let [item-id (second event)
+            db      (:db coeffects)]
+        {:db    (dissoc-in db [:items item-id])
+         :tweet "Item deleted"})))
+#+end_src
+** The state change will result in the query, view and DOM step being run, and the UI updated.
+* A Query function is part of a subscription, which is registered with =reg-sub=
+** again a subscription registration takes 2 arguments: the query name and the query function
+** the query function takes 2 arguments: the db and a vector of query parameters
+#+begin_src clojure
+  (rf/reg-sub
+    :query-items
+    (fn [db v]
+      (:items db)))
+#+end_src
+** The query function is rerun when a state change is detected and the result passed to anyone who subscribes to that query
+* In step 5, view, any function which has =rf/subscribe= in it gets the new values and is rerun
+#+begin_src clojure
+  (defn items-view []
+    (let [items (subscribe [:query-items "blue"])] ;this sub is parameterized
+      [:div (map item-render @items)])) ;note the deref
+#+end_src
+
