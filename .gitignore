@@ -3,3 +3,4 @@ pegthing/
 .idea/
 *.lein-repl-history
 *.swp
+.cpcache/

@@ -1,0 +1,58 @@
+#+TITLE: Clojure Libraries
+
+* Core
+** Core async
+*** import =[clojure.core.async :as a]=
+*** leiningen =[org.clojure/core.async "1.0.567"]=
+** Spec
+*** import =[clojure.spec.alpha :as spec]=
+*** gen sublib =[clojure.spec.gen.alpha :as gen]=
+** Set
+** Match
+* Data manipulation and transformation
+** Malli (using transforms, see Data Schema)
+** Specter - lens library for searching and updating highly nested structures
+** Meander - declarative data transformations using pattern matching
+*** lein =[meander/epsilon "0.0.421"]=
+*** import =[meander.epsilon :as m]=
+* Data schema
+** clojure.spec
+** malli
+** schema
+* Serialization and IO
+** JSON
+*** Clojure JSON
+**** lein =[org.clojure/data.json "1.0.0"]=
+**** import =[org.clojure.json :as json]=
+**** =json.write-str= and =json/read-str=
+*** Cheshire
+**** lein =[cheshire "5.10.0"]=
+**** import =[cheshire.core :refer :all]=
+** =clojure.edn=
+*** builtin
+*** =[clojure.edn :as edn]=
+** Hiccup - represent HTML in clojure data structures
+* Math and math-like
+** combinatorics
+*** lein =[org.clojure/math.combinatorics "0.1.6"]=
+*** import =[clojure.math.combinatorics :as c]=
+** numeric tower - various common math utilities
+*** lein =[org.clojure/math.numeric-tower "0.0.4"]=
+*** import =[clojure.math.numeric-tower :as math]=
+*** sqrt, expt, gcd, lcm, floor, ceil, round
+* App design
+** expound - humanize error messages
+** component - framework for managing component lifecycles
+*** lein =[com.stuartsierra/component ""]=
+*** import =[com.stuartsierra.component :as component]=
+** environ - light lib for managing environment settings
+** immuconf - lib for managing config (slightly heavier than environ)
+* Testing
+* Database
+** Crux
+** next.jdbc
+** datomic
+** datascript (in-memory DB meant for the browser)
+* HTTP
+** clj-http
+** http-kit

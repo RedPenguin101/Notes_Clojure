@@ -3,19 +3,20 @@
 
 (def initial-app-db {:auth    {:uid nil}
                      :errors  {}
-                     :inboxes {:inbox-01 {:participants #{"mike@mailinator.com" "jade@mailinator.com"}
-                                          :messages     [{:message    "first message"
-                                                          :author     "mike@mailinator.com"
-                                                          :created-at 1544614386378}
-                                                         {:message    "second message"
-                                                          :author     "jade@mailinator.com"
-                                                          :created-at 1544514356378}
-                                                         {:message    "third message"
-                                                          :author     "mike@mailinator.com"
-                                                          :created-at 1544414336378}
-                                                         {:message    "fourth message"
-                                                          :author     "mike@mailinator.com"
-                                                          :created-at 1544314316378}]}
+                     :inboxes {:inbox-01
+                               {:participants #{"mike@mailinator.com" "jade@mailinator.com"}
+                                :messages     [{:message    "first message"
+                                                :author     "mike@mailinator.com"
+                                                :created-at 1544614386378}
+                                               {:message    "second message"
+                                                :author     "jade@mailinator.com"
+                                                :created-at 1544514356378}
+                                               {:message    "third message"
+                                                :author     "mike@mailinator.com"
+                                                :created-at 1544414336378}
+                                               {:message    "fourth message"
+                                                :author     "mike@mailinator.com"
+                                                :created-at 1544314316378}]}
                                :inbox-02 {:participants #{"mike@mailinator.com" "mark@mailinator.com"}
                                           :messages     [{:message    "first message"
                                                           :author     "mike@mailinator.com"
