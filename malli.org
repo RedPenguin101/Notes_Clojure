@@ -1,0 +1,74 @@
+#+TITLE: Malli
+#+begin_src clojure
+  (require '[malli.core :as m])
+#+end_src
+
+Malli is a library for creating pure data schemas
+
+Like spec, they are based on predicates. Unlike spec, schema definitions are pure data, (defined by vectors)
+
+#+begin_src clojure
+  "spec for an integer"
+  (m/validate int? 7);; => true
+
+  "spec for an integer greater than 6"
+  (m/validate [:and int? [:> 6]] 7);; => true
+
+  "maps can be given properties, which can be arbitrary (i.e. you can add anything you like for your own use)"
+  (def my-schema [:map
+                  [:x boolean?]
+                  [:y {:optional true} int?]
+                  [:z string?]])
+
+  (m/validate my-schema {:x true :z "hello"})
+  ;; => true
+
+  (m/validate my-schema {:x false :y 5 :z "world"})
+  ;; => true
+
+  "maps are open by default, but can be closed with the :closed property"
+  (m/validate my-schema {:x true :z "foo" :w :bar})
+  ;; => true
+#+end_src
+
+You can define invariants on schemas with functions
+
+#+begin_src clojure
+  (def my-schema
+    [:and
+     [:map
+      [:x int?]
+      [:y int?]]
+     [:fn '(fn [{:keys [x y]}] (> x y))]])
+
+  (m/validate my-schema {:x 1 :y 0});; => true
+  (m/validate my-schema {:x 1 :y 2});; => false
+
+  (m/explain my-schema {:x 1 :y 2})
+  ;; => {:schema [:and [:map [:x int?] [:y int?]] [:fn (fn [{:keys [x y]}] (> x y))]], :value {:x 1, :y 2}, :errors (#Error{:path [2], :in [], :schema [:fn (fn [{:keys [x y]}] (> x y))], :value {:x 1, :y 2}})}
+#+end_src
+
+* Available Keywords
+** Denoting datatypes
++ :map
++ :set
++ :tuple (vector of predetermined size)
++ :enum
++ :re (regex)
++ :vector
++ :multi (allow multiple possible types, dispatching on key)
++ :fn
+** logical combinations
++ :and
+** predicate shortcuts
++ :>
+** properties
++ :optional
++ :closed
++ :gen/fmap (generator function)
++ :error/message
++ :error/fn
++ :dispatch
++ :min (minimum number of things in a collection)
++ :max 
+
