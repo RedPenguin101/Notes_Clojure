@@ -1,0 +1,121 @@
+#+TITLE: Clojure Patterns
+
+* Working with sequential data
+** I want to check if an element is part of my collection
+#+begin_src clojure
+  (some #{:x} [1 2 3 4]);; => nil
+
+  (some #{:x} [1 2 3 4 :x])
+  ;; => :x
+
+  (some #{3} (vals {:a 1 :b 2 :c 3}))
+  ;; => 3
+
+  ;; less commonly
+
+  ((into #{} [1 2 3 4 :x]) :x)
+  ;; => :x
+#+end_src
+
+** I want to split a sequence based on its values
+=split-with=, =partition-by= and =group-by= are all useful for this.
+
+Each takes a predicate and uses it to split up a collection.
+
++ =split-with= just finds the first occurance of the predicate being true, and splits there
++ =partition-by= splits the collection into new sequences whenever the predicate starts or stops being true
++ =group-by= returns a map where the key is the return of the function and the vals are any values in the sequence that give that return.
+
+#+begin_src clojure
+  (split-with (partial >= 3) [1 2 3 4 5])
+  ;; => [(1 2 3) (4 5)]
+  (partition-by (partial >= 3) [1 2 3 4 5])
+  ;; => ((1 2 3) (4 5))
+  (vals (group-by (partial >= 3) [1 2 3 4 5]))
+  ;; => ([1 2 3] [4 5])
+
+  (split-with (partial >= 3) [1 2 5 4 2])
+  ;; => [(1 2) (5 4 2)]
+  (partition-by (partial >= 3) [1 2 5 4 2])
+  ;; => ((1 2) (5 4) (2))
+  (vals (group-by (partial >= 3) [1 2 5 4 2]))
+  ;; => ([1 2 2] [5 4])
+#+end_src
+
+** I have a collection and want to check every element in the collection against a predicate
+=every?= /element meets the condition/ (the and), =some= /element meets the condition/ (the or)
+
+#+begin_src clojure
+  (every? even? [2 4 6 8])
+  ;; => true
+  (every? even? [2 4 6 8 9])
+  ;; => false
+
+  (some odd? [2 4 6 8])
+  ;; => nil
+  (some odd? [2 4 6 8 9])
+  ;; => true
+#+end_src
+
+** I have a collection and I want to remove duplicates from it
+#+begin_src clojure
+  (distinct [1 2 3 4 1 2 3 4])
+  ;; => (1 2 3 4)
+
+  "use dedupe for removing only consecutive dups"
+
+  (dedupe [1 1 2 2 3 3 1 2 3])
+  ;; => (1 2 3 1 2 3)
+#+end_src
+
+* Working with associative data
+** I have some data and a reference lookup with some related data, and I want to look up the reference data and apply it to the data
+Use =merge-with=
+
+*** I have a pizza recipe and a map of ingredient prices. I want to find the price of the pizza ingredients
+#+begin_src clojure
+  (def pizza {:ingredients {:tomato    4
+                            :flour     2
+                            :cheese    4
+                            :pepperoni 3}})
+
+  (def prices {:tomato    12
+               :flour     42
+               :cheese    44
+               :pepperoni 43})
+
+  (merge-with * (:ingredients pizza) prices)
+  ;; => {:tomato 48, :flour 84, :cheese 176, :pepperoni 129}
+
+  (reduce + (vals (merge-with * (:ingredients pizza) prices)))
+  ;; => 437
+#+end_src
+
+** I want to update every value in a map
+#+begin_src clojure
+  (def ingredients {:tomato    4
+                    :flour     2
+                    :cheese    4
+                    :pepperoni 3})
+
+  (reduce-kv (fn [A k v] (assoc A k (* 10 v))) {} ingredients)
+  ;; => {:tomato 40, :flour 20, :cheese 40, :pepperoni 30}
+
+  (into {} (map #(vector (% 0) (* (% 1) 10)) ingredients))
+  ;; => {:tomato 40, :flour 20, :cheese 40, :pepperoni 30}
+#+end_src
+
+* Working with numbers
+** I want to separate a number into a collection of its digits
+#+begin_src clojure
+  (map #(Character/digit % 10) (str 1234));; => (1 2 3 4)
+#+end_src
+
+* Working with dates
+** I want to parse a date from a string
+#+begin_src clojure
+  (clojure.instant/read-instant-date "2020-01-01")
+  ;; => #inst "2020-01-01T00:00:00.000-00:00"
+#+end_src
+
+* Conditionals
