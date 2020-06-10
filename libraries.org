@@ -1,5 +1,10 @@
 #+TITLE: Clojure Libraries
 
+* deps.edn
+#+begin_src clojure
+  {:deps
+   {com.rpl/specter {:mvn/version "1.1.3"}}
+#+end_src
 * Core
 ** Core async
 *** import =[clojure.core.async :as a]=
@@ -9,6 +14,7 @@
 *** gen sublib =[clojure.spec.gen.alpha :as gen]=
 ** Set
 ** Match
+
 * Data manipulation and transformation
 ** Malli (using transforms, see Data Schema)
 ** Specter - lens library for searching and updating highly nested structures
@@ -32,6 +38,22 @@
 *** builtin
 *** =[clojure.edn :as edn]=
 ** Hiccup - represent HTML in clojure data structures
+** =clojure.data.csv=
+*** [org.clojure/data.csv "1.0.0"]
+#+begin_src clojure
+  (require '[clojure.data.csv :as csv]
+           '[clojure.java.io :as io])
+
+  (with-open [reader (io/reader "in-file.csv")]
+    (doall (csv/read-csv reader)))
+  ;; parses to a vector of strings
+
+  (with-open [writer (io/writer "out-file.csv")]
+    (csv/write-file writer
+                    [["abc" "def"]
+                     ["ghi" "jkl"]]))
+#+end_src
+
 * Math and math-like
 ** combinatorics
 *** lein =[org.clojure/math.combinatorics "0.1.6"]=

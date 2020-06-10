@@ -1,0 +1,194 @@
+#+TITLE: Juxt Tick
+
+A time manipulation library for Clojure
+
+Uses =java.time= - =instant=, =LocalTime= etc.
+
+#+begin_src clojure
+  (require '[tick.alpha.api :as t]
+           '[tick.timezone])
+
+  (t/now)
+  ;; => #time/instant "2020-06-10T11:10:40.363357Z"
+#+end_src
+
+* Types
+** Tick
+*** Absolutes
+=#time/time=
+=#time/date=
+=#time/date-time=
+=#time/offset-date-time=
+=#time/zoned-date-time=
+=#time/instant=
+=#time/day-of-week=
+*** Relatives
+=#time/duration= - a duration as seconds
+=#time/period= - a duration as Y/M/D etc.
+Interval - a duration as a map of =:tick/beginning= and =:tick/end=, with values as =t/instants=
+** Other
+=inst= - main Java.util.date construct
+* Getting dates and times
+** Times
+#+begin_src clojure
+  (t/time)
+  ;; => #time/time "12:11:56.489967"
+
+  (t/time "19:45")
+  ;; => #time/time "19:45"
+
+#+end_src
+
+** Dates
+#+begin_src clojure
+  (t/date)
+  ;; => #time/date "2020-06-10"
+  (t/today)
+  ;; => #time/date "2020-06-10"
+
+  (t/day-of-week (t/tomorrow))
+  ;; => #time/day-of-week "THURSDAY"
+
+  (t/date "2019-06-21")
+  ;; => #time/date "2019-06-21"
+#+end_src
+
+** Datetimes
+#+begin_src clojure
+  (t/date-time)
+  ;; => #time/date-time "2020-06-10T12:14:58.773152"
+
+  (t/date-time "1918-11-11T11:00")
+  ;; => #time/date-time "1918-11-11T11:00"
+#+end_src
+
+** Instants
+#+begin_src clojure
+  (t/instant)
+  ;; => #time/instant "2020-06-10T11:21:38.598751Z"
+
+  (t/now)
+  ;; => #time/instant "2020-06-10T11:21:42.936173Z"
+#+end_src
+
+* Timezones and offsets
+An /offset-date-time/ is a date-time which has a /local-offset/ from UTC.
+
+A /zoned-date-time/ is a date-time which is connected to a particular location (this helps to handle things like DST)
+
+If you're working exclusively with UTC, don't use them. Only use them when you want to localise. To get to UTC from an offset/zoned DT, use =t/instant=
+#+begin_src clojure
+  (t/offset-date-time "1918-11-11T11:00:00+01:00")
+  ;; => #time/offset-date-time "1918-11-11T11:00+01:00"
+
+  (t/zoned-date-time "1918-11-11T11:00:00Z[Europe/Paris]")
+  ;; => #time/zoned-date-time "1918-11-11T11:00Z[Europe/Paris]"
+
+  (t/instant (t/offset-date-time "1918-11-11T11:00:00+01:00"))
+  ;; => #time/instant "1918-11-11T10:00:00Z"
+#+end_src
+
+* Construction
+The functions to this point have effectively been string conversion functions - you give them a string and they will be parsed to a time construct. We can also use explicit constructors, prefixed with =new-= 
+#+begin_src clojure
+  (t/new-time 11 0)
+  ;; => #time/time "11:00"
+
+  (t/new-time 11 0 25)
+  ;; => #time/time "11:00:25"
+
+  (t/new-time 11 0 25 999999)
+  ;; => #time/time "11:00:25.000999999"
+
+  (t/new-date 2013 3 22);; => #time/date "2013-03-22"
+#+end_src
+
+* Combining dates, times and timezones (Reifying)
+#+begin_src clojure
+  (t/at Date time-string) -> Datetime
+  (t/at (t/date "1918-11-11") "11:00")
+  ;; => #time/date-time "1918-11-11T11:00"
+
+  (t/on Time date-string) -> Datetime
+  (t/on (t/time "11:00") "1918-11-11")
+  ;; => #time/date-time "1918-11-11T11:00"
+
+  (t/in Datetime zone-string) -> Zoned
+  (t/in (t/on (t/time "11:00") "1918-11-11") "Europe/Paris")
+  ;; => #time/zoned-date-time "1918-11-11T11:00Z[Europe/Paris]"
+
+  (t/offset-by Datetime offset-num) -> Offset
+  (t/offset-by (t/on (t/time "11:00") "1918-11-11") 2)
+  ;; => #time/offset-date-time "1918-11-11T11:00+02:00"
+
+#+end_src
+
+* Extraction
+=day-of-week= - enums represented as =t/MONDAY= etc.
+=month= - represented as =t/MAY= etc.
+=year=
+
+* Durations/Periods
+=Duration= stores time as an amount of seconds
+=Period= stores time as years, months, days
+#+begin_src clojure
+  (t/new-duration 1 :seconds);; => #time/duration "PT1S"
+  (t/new-duration 100 :days)
+  ;; => #time/duration "PT2400H"
+
+  (t/new-period 100 :days)
+  ;; => #time/period "P100D"
+  (t/new-period 2 :months);; => #time/period "P2M"
+#+end_src
+
+* Intervals
+#+begin_src clojure
+  {:tick/beginning "2018-12-31T23:55:00Z"
+   :tick/end       "2019-01-01T00:00:00Z"}
+
+  (t/new-interval
+    (t/instant "2018-12-31T23:55:00Z")
+    (t/instant "2019-01-01T00:00:00Z"))
+  ;; => #:tick{:beginning #time/instant "2018-12-31T23:55:00Z", :end #time/instant "2019-01-01T00:00:00Z"}
+#+end_src
+
+* Aritmetic
+** Modifying absolutes, extending intervals and periods
+#+begin_src clojure
+  (t/+ (t/now) ;; time/instant
+       (t/new-duration 15 :minutes))
+  ;; => #time/instant "2020-06-10T12:04:16.122403Z"
+
+  (t/extend {:tick/beginning (t/instant "2018-12-31T23:55:00")
+             :tick/end       (t/instant "2019-01-01T00:00:00")}
+    (t/new-period 10 :weeks))
+  ;; => #:tick{:beginning #time/instant "2018-12-31T23:55:00Z", :end #time/instant "2019-03-12T00:00:00Z"}
+  "extend backwards with negative periods"
+#+end_src
+
+
+#+begin_src clojure
+  (t/between (t/date "2019-01-01") (t/date "2018-01-01"))
+  ;; => #time/period "P-1Y"
+
+  (t/between (t/date "2019-12-31") (t/date "2019-09-30"))
+  ;; => #time/period "P-3M-1D"
+#+end_src
+
+* Other libs / interop
+If you need to get to a =java.util.Date= (or JS Date), use =inst=
+#+begin_src clojure
+  (t/now)
+  ;; => #time/instant "2020-06-10T11:22:56.973094Z"
+
+  (t/inst (t/now))
+  ;; => #inst "2020-06-10T11:23:05.841-00:00"
+
+  (t/inst)
+  ;; => #inst "2020-06-10T11:23:15.264-00:00"
+#+end_src
+
+* Find
+
+#+begin_src clojure
+#+end_src
