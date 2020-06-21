@@ -1,7 +1,7 @@
 #+TITLE: Clojure Patterns
 
-* Working with sequential data
-** I want to check if an element is part of my collection
+* I have a sequential collection and...
+** I want to check if an element is in it
 #+begin_src clojure
   (some #{:x} [1 2 3 4]);; => nil
 
@@ -17,7 +17,7 @@
   ;; => :x
 #+end_src
 
-** I want to split a sequence based on its values
+** I want to split it based on the value of each element
 =split-with=, =partition-by= and =group-by= are all useful for this.
 
 Each takes a predicate and uses it to split up a collection.
@@ -42,7 +42,7 @@ Each takes a predicate and uses it to split up a collection.
   ;; => ([1 2 2] [5 4])
 #+end_src
 
-** I have a collection and want to check every element in the collection against a predicate
+** I want to check every element in the collection against a predicate
 =every?= /element meets the condition/ (the and), =some= /element meets the condition/ (the or)
 
 #+begin_src clojure
@@ -57,7 +57,7 @@ Each takes a predicate and uses it to split up a collection.
   ;; => true
 #+end_src
 
-** I have a collection and I want to remove duplicates from it
+** I want to remove duplicates from it
 #+begin_src clojure
   (distinct [1 2 3 4 1 2 3 4])
   ;; => (1 2 3 4)
@@ -68,8 +68,22 @@ Each takes a predicate and uses it to split up a collection.
   ;; => (1 2 3 1 2 3)
 #+end_src
 
-* Working with sequences of maps (Observations)
-** I have two seqs of observations, and I want to combine them into a single set based on a matching key-value pair present in both
+** I want to create a 'sliding window' on window on it, looking at a few elements at a time
+You can do this with partition's higher arity uses
+#+begin_src clojure
+  (def xs (range 12))
+  ;; will just partition
+  (partition 3 xs)
+  ;; => ((0 1 2) (3 4 5) (6 7 8) (9 10 11))
+
+  ;; the 2nd 'step' argument will introduce the window, acting like a slide size
+  (partition 3 1 xs);; => ((0 1 2) (1 2 3) (2 3 4) (3 4 5) (4 5 6) (5 6 7) (6 7 8) (7 8 9) (8 9 10) (9 10 11))
+  (partition 3 2 xs)
+  ;; => ((0 1 2) (2 3 4) (4 5 6) (6 7 8) (8 9 10))
+#+end_src
+
+* I have a sequence of maps (observations) and...
+** I want to combine them into a single seq based on a matching key-value pair present in both
 #+begin_src clojure
   (def x [{:key1 1 :key2 2} {:key1 4 :key2 5}])
   (def y [{:key1 1 :key3 3} {:key1 4 :key3 6}])
@@ -79,7 +93,7 @@ Each takes a predicate and uses it to split up a collection.
   ;; => [{:key1 4, :key2 5, :key3 6} {:key1 1, :key2 2, :key3 3}]
 #+end_src
 
-** I have a sequence of observations and I want to group them into a map with one of the values being the key and the value being a sequence of (some) of the other kv pairs 
+** I want to group them into a single map with one of the values being the key and the value being a sequence of other kv pairs
 #+begin_src clojure
   (defn conjv [a b]
     (if (nil? a) [b]
@@ -98,8 +112,10 @@ Each takes a predicate and uses it to split up a collection.
   ;; => {"fred" ["burger" "pizza" "apple"], "jane" ["kebab" "sandwich"]}
 #+end_src
 
-* Working with associative data
-** I have some data and a reference lookup with some related data, and I want to look up the reference data and apply it to the data
+(Note, you might think group-by here will be helpful, but though it gets the keys right you end with values being observations, which you have to map over anyway.
+
+* I have a map and...
+** also some reference data (as a map), and I want to look up the reference data and apply it to the data
 Use =merge-with=
 
 *** I have a pizza recipe and a map of ingredient prices. I want to find the price of the pizza ingredients
@@ -121,7 +137,7 @@ Use =merge-with=
   ;; => 437
 #+end_src
 
-** I want to update every value in a map
+** I want to update every value in it
 #+begin_src clojure
   (def ingredients {:tomato    4
                     :flour     2
@@ -135,7 +151,7 @@ Use =merge-with=
   ;; => {:tomato 40, :flour 20, :cheese 40, :pepperoni 30}
 #+end_src
 
-** I want to remove several keys from my map
+** I want to drop several kvs from it
 #+begin_src clojure
   (apply dissoc {:a 1 :b 2 :c 3} [:b :c])
   ;; => {:a 1}
@@ -153,6 +169,20 @@ Use =merge-with=
 
   (update-existing {:a 1 :b 2 :c 3} :c inc)
   ;; => {:a 1, :b 2, :c 4}
+#+end_src
+
+* Working with nested associative data
+** I have several map of maps with sparse top-level keys, and I want to merge the inner maps only if they exist in one or more of the maps
+Use =cond->=
+
+#+begin_src clojure
+  (defn merge-periods
+    [& periods]
+    (let [measures (apply merge-with + (map :measures periods))
+          accruals (apply merge-with + (map :accruals periods))]
+      (cond-> {:date (:date (first periods))}
+        measures (assoc :measures measures)
+        accruals (assoc :accruals accruals))))
 #+end_src
 
 * Working with numbers

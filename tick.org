@@ -152,7 +152,19 @@ The functions to this point have effectively been string conversion functions - 
   ;; => #:tick{:beginning #time/instant "2018-12-31T23:55:00Z", :end #time/instant "2019-01-01T00:00:00Z"}
 #+end_src
 
-* Aritmetic
+** Number of days between two dates
+#+begin_src clojure
+  '(count (t/range date1 date1))
+
+  (defn- year-frac
+    "Given two dates, returns the number of years as a fraction between them. If date2 is before date 1, 0 is returned"
+    [date1 date2]
+    (/ (count (t/range (t/date date1) (t/date date2)))
+       365))
+#+end_src
+
+
+* Arithmetic
 ** Modifying absolutes, extending intervals and periods
 #+begin_src clojure
   (t/+ (t/now) ;; time/instant
@@ -192,3 +204,4 @@ If you need to get to a =java.util.Date= (or JS Date), use =inst=
 
 #+begin_src clojure
 #+end_src
+

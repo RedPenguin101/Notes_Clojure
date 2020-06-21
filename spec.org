@@ -1,0 +1,78 @@
+#+TITLE: Clojure Spec
+#+begin_src clojure
+  (require '[clojure.spec.alpha :as s]
+           '[clojure.spec.test.alpha :as stest])
+#+end_src
+
+
+* Specing Data
+** Collections
++ =tuple=
++ =coll-of=
++ =map-of=
++ =keys=
+ 
+** =and= and =or=
+
+** Regex's
++ =s/cat=
++ =s/+=
++ =s/*=
++ =s/?=
+  
+** Dates
+Use =(s/inst-in #inst "1990" #inst "2000")= to spec dates between two dates. The generator is a bit weird with this, the first ~50 results will just be the earliest date possible.
+
+** misc
++ =s/int-in= - helper which lets you specify an integer between two values
+
+* Generating mock data with gen and exercise
+
+* Specing Functions
+The kv pairs are: =:args=, =:ret= and =:fn=.
+
+For =:args=, you'll use =s/cat= a lot, and also the other regex's
+
+#+begin_src clojure
+(defn ending-aum [period]
+  (reduce + (vals (:measures period))))
+
+(s/fdef ending-aum
+  :args (s/cat :period ::period)
+  :ret number?)
+
+(defn merge-periods [& periods]
+  {:date     (:date (first periods))
+   :measures (apply merge-with + (map :measures periods))
+   :accruals (apply merge-with + (map :accruals periods))})
+
+(s/fdef merge-periods
+  :args (s/+ ::period)
+  :ret ::period)
+#+end_src
+
+* Instrumenting
+Instrumenting is a dev-time toggle for when you want to 'type-check' your functions. To get it working, you'll need a function which has a =s/fdef= definition in the spec registry.
+
+Turn on instrumenting with =(stest/instrument `my-function)=
+Turn it off with =(stest/unstrument `my-function)= 
+
+#+begin_src clojure
+  (s/def ::date (s/inst-in #inst "1990" #inst "2050"))
+  (s/def ::amount (s/and number? #(<= -1E12 % 1E12)))
+  (s/def ::cashflow (s/tuple ::date ::amount))
+
+  (defn net-cashflow
+    "Returns the net cashflow amount of a sequence of cashflows"
+    [cashflows]
+    (reduce #(+ %1 (amount-from %2)) 0 cashflows))
+
+  (s/fdef net-cashflow
+    :args (s/cat :cashflows (s/coll-of ::cashflow))
+    :ret number?)
+
+  (stest/instrument `net-cashflow)
+  (stest/check `net-cashflow)
+  (stest/unstrument `net-cashflow)
+#+end_src
+
