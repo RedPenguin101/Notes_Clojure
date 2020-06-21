@@ -1,0 +1,332 @@
+#+TITLE: Walkthrough of Practicalli Covid data science library
+
+https://github.com/practicalli/covid19-dashboard
+
+This is a tutorial repo by Clojure mainstay Practicalli, where he livecodes the creation of a dashboard for the visualisation of covid19 data.
+
+The data set is based on the UK government reporting at https://coronavirus.data.gov.uk/
+
+* Dependencies
+The library uses 
++ Oz for data visualization
++ docjure for ?
++ jsonista, data.csv and semantic-csv for serialization
++ test.check and cognitect/test-runner for testing
+
+** Oz
+https://github.com/metasoarous/oz
+Oz is a library for data visualization, based on the Vega/Vega-lite declarative visualization DSL. It's similar in concept to the R ggplot2 library.
+
+Oz provides a webserver which you can use to interactively work with plots.
+
+* Namespaces
++ =covid19-dashboard= contains main
++ =vega-lite-views=
++ =view-helpers=
++ =data-geo-json=
++ =data-gov-uk=
++ =data-gov-uk-depricated=
+
+** Unusued namespaces
++ =data-mock=
++ =data-transform=
++ =data-transform-ons=
++ =design-journal=
+
+** Dependencies tree
+#+begin_example
+                       covid19-dashboard
+     __________________/  /          \  \________
+    /                    /            \          \
+  views             view-helpers     data    data-geo-json
+   |                /
+data-depricated ___/
+#+end_example
+
+* covid19-dashboard
+This is the main namespace. It has a =dashboard-corvid19-uk= function which takes a geojson-view and return hiccup-style html with plots.
+
+The html returned by =dashboard-corvid19-uk= has the following elements
++ include-bulma-css
++ webpage-heading
++ headline-figures (all from view helpers)
++ a section with two views from the =vega-lite-views= namespace, and one from that is just passed the geojson-view
+
+All of these except the geojson are impure functions, presumably reading data when called. For example =views/line-plot-uk-countries-cumulative-cases= is not passed any arguments, so I think it must just run it's own data query. This seems like an odd design decision, particularly because one of the plots /does/ use a passed in view. It's understandable for the bulma-css and heading, which are presumably pretty static.
+
+both views and view-helpers have dependencies on the =data-deprecated= namespace.
+
+#+begin_src clojure
+  (defn dashboard-corvid19-uk
+    [geojson-view]
+    [:div
+     ;; Web page structure and content
+     view-helpers/include-bulma-css
+
+     ;; Heading
+     view-helpers/webpage-heading
+
+     ;; Daily Headline figures
+     (view-helpers/headline-figures)
+
+     ;; Oz visualization
+     [:section {:class "section"}
+      [:vega-lite views/line-plot-uk-countries-cumulative-cases]
+      [:vega-lite views/stacked-bar-uk-countries-cumulative-cases]
+      [:vega-lite geojson-view]]])
+#+end_src
+
+The =main= function loads the data (using =data-gov-uk/coronavirus-cases-data= and =data-geo-json/geojson-cases-data=) and creates an =oz/view!= with the =dashboard-corvid19-uk=.
+
+#+begin_src clojure
+(defn -main
+  "Display a given Oz view"
+  []
+
+  ;; Data Extraction and transformation pipleline
+  (let [cases-data
+        (data-gov-uk/coronavirus-cases-data
+          {:csv-file  "data-sets/uk-coronavirus-cases.csv"
+           :locations #{"Nation" "Country" "Region"}
+           :date      "2020-04-30"})
+
+        geojson-cases-data
+        (data-geo-json/geojson-cases-data
+          "public/geo-data/uk-local-area-districts-administrative-martinjc-lad.json"
+          cases-data)]
+
+    (oz/view!
+      (dashboard-corvid19-uk
+        (views/geo-json-view geojson-cases-data 1000)))))
+#+end_src
+
+So the pipeline for generating the geojson view is.
+=file, date -> case-data -> geojson-data -> geojson-view=
+
+Lets start by looking at the generation of the geo-json data, which means starting with =data-gov-uk=.
+
+* =data-gov-uk=
+api:
++ coronavirus-cases-data
+
+private functions:
++ extract-data-from-scv
++ data-set-remove-locations
++ data-set-specific-date
+
+*coronavirus-cases-data* takes a filename, a set of locations to /remove/, and a date, and returns a data-set. 
+
+#+begin_src clojure
+(defn coronavirus-cases-data
+  "Extract and transform cases data for specific locations and date"
+  [{:keys [csv-file locations date]}]
+  (-> (extract-data-from-csv csv-file)
+      (data-set-remove-locations locations)
+      (data-set-specific-date  date)))
+#+end_src
+
+The private functions here are simple
+
+#+begin_src clojure
+  (defn extract-data-from-csv
+      "Convert CSV file to sequence of vectors
+      Each hash-map uses the heading text as a key
+      for each element in the row of data.
+
+      Return: a sequence of vectors"
+      [data-source]
+      (->> data-source
+           io/resource
+           slurp
+           csv/read-csv))
+
+  (defn data-set-remove-locations
+    [data-set location-set]
+    (remove #(some location-set %) data-set))
+
+(defn data-set-specific-date
+  "Transform to map for visualization,
+  including only the specific date.
+
+  Use csv headings as keys in each map.
+
+  Return: a sequence of maps"
+  [extracted-data-set date]
+
+  (let [heading (first extracted-data-set)]
+    (semantic-csv/mappify
+      {:keyify false}
+      (conj
+        (filter #(some #{date} %) extracted-data-set)
+        heading))))
+#+end_src
+
+Only comment here is that =data-set-specific-date= is doing two things: filtering in the date and mappifying. It would be better to split these two things out.
+
+Note as well the common idiom for filtering on a set using some: =(remove #(some my-set %) data)=
+
+Mappifying is a common idiom when working with csv data. When parsed, csv data is represented as a vector of vectors, with the first vector being the headers and subsequent ones being the observations. A common use case is to turn the observations in maps of header->value. On the =data.csv= github, Alex provides a utility function for doing this, which uses a zipmap of the (repeated) header and the observations:
+
+#+begin_src clojure
+  (defn csv-data->maps [csv-data]
+    (map zipmap
+         (->> (first csv-data) ;; First row is the header
+              (map keyword) ;; Drop if you want string keys instead
+              repeat)
+      (rest csv-data)))
+
+  (csv-data->maps (read-csv reader))
+#+end_src
+
+Let's have a look at the dataset this generates
+
+#+begin_src clojure
+  (require '[practicalli.data-gov-uk :as data])
+
+  (take 2 (data/coronavirus-cases-data {:csv-file  "data-sets/uk-coronavirus-cases.csv"
+                                        :locations #{"Nation" "Country" "Region"}
+                                        :date      "2020-04-30"}))
+
+  ({"Area name"                            "Worcestershire",
+    "Area code"                            "E10000034",
+    "Daily lab-confirmed cases"            "0",
+    "Change in cumulative cases"           "",
+    "Previously reported cumulative cases" "",
+    "Previously reported daily cases"      "",
+    "Change in daily cases"                "",
+    "Area type"                            "Upper tier local authority",
+    "Cumulative lab-confirmed cases"       "1139",
+    "Specimen date"                        "2020-04-30"}
+   {"Area name"                            "West Sussex",
+    "Area code"                            "E10000032",
+    "Daily lab-confirmed cases"            "0",
+    "Change in cumulative cases"           "",
+    "Previously reported cumulative cases" "",
+    "Previously reported daily cases"      "",
+    "Change in daily cases"                "",
+    "Area type"                            "Upper tier local authority",
+    "Cumulative lab-confirmed cases"       "1126",
+    "Specimen date"                        "2020-04-30"})
+#+end_src
+
+Simple enough. Lets look at the geo-data namespace:
+
+* =data-geo-json=
+functions:
++ geojson-case-data (public)
++ geojson->clj (private)
+
+Has a dependency on the jsonista json lib.
+
+** geojson->clj
+#+begin_src clojure
+(defn geojson->clj
+  "Convert GeoJSON files to Clojure data structure
+
+  Arguments: GeoJSON file
+  Return: Clojure sequence"
+
+  [geo-json-resource]
+
+  (json/read-value
+    (io/resource geo-json-resource)
+    (json/object-mapper {:decode-key-fn true})))
+#+end_src
+
+Takes geojson data (which I think is a data format?) and spits out edn. I actually couldn't get this to work, so I replicated it with something which I think is much less efficient. Note the real version keywordifies the keys.
+
+#+begin_src clojure
+  (require '[jsonista.core :as json])
+
+  (def gj-resource "public/geodata/uk-local-area-districts-administrative-martinjc-lad.json")
+  (def data (json/read-value (slurp gj-resource)))
+  (count data);; => 3
+
+  (take 2 data) ;; I actually monkeied around with the output here for clarity
+  {"crs"     {"properties" {"name" "urn:ogc:def:crs:OGC:1.3:CRS84"}, 
+                            "type" "name"} 
+   "type"     "FeatureCollection"
+   "features" "A vector of maps of the format below"}
+
+
+  (assoc-in (get-in data ["features" 0]) ["geometry" "coordinates"] "massive multilevel vector of lat/long")
+
+  ;; a Feature
+  {"properties" {"LAD13CD"  "E06000001",
+                 "LAD13NMW" nil,
+                 "LAD13NM"  "Hartlepool", ;; note this, it's used for the matching later on
+                 "LAD13CDO" "00EB"},
+   "geometry"   {"coordinates" "massive multilevel vector of lat/long",
+                 "type"        "MultiPolygon"},
+   "type"       "Feature"}
+#+end_src
+
+** geojson-case-data
+#+begin_src clojure
+  (defn geojson-cases-data
+    "Combine data sets by adding top level keys
+    to each location (feature) in the GeoJSON file
+
+    Attributes:
+    - GeoJSON file
+    - A sequence of hash-map values for each location
+
+    Returns: GeoJSON in Clojure with additional top level keys"
+
+    [geojson-file cases-data-set]
+
+    (let [geojson-data (geojson->clj geojson-file)]
+      (update geojson-data :features
+              (fn [features]
+                (mapv
+                  (fn [feature]
+                    (assoc feature :Cases
+                           (get (first (filter
+                                         #(some #{(:LAD13NM (:properties feature))} (vals %))
+                                         cases-data-set))
+                                "Cumulative lab-confirmed cases" -1) ;; -1 is fallback value if place name isn't in the cases data set
+
+                           :Location (:LAD13NM (:properties feature))))
+
+                  features)))))
+#+end_src
+
+So this is a bit of a beast. Nested anonymous functions. Let's pull it apart. 
+
+First, a 'Feature' is a description of a location. It has a 'properties' (most notably the name, in the :LAD13NM value) and a geometry (most notably a big vector of lat/long co-ordinates describing a polygon). The goal of the =geojson-cases-data= function is to add in to each feature the number of cases associated with it. So it will end up looking like this.
+
+#+begin_src clojure
+  ;; a Feature post-transform
+  {:properties {:LAD13CD  "E06000001",
+                :LAD13NMW nil,
+                :LAD13NM  "Hartlepool",
+                :LAD13CDO "00EB"},
+   :Cases      100
+   :geometry   {:coordinates "massive multilevel vector of lat/long",
+                :type        "MultiPolygon"},
+   :type       "Feature"}
+#+end_src
+
+The inner nested function takes a feature, finds the associated number of cases in the dataset and puts it in the feature. The outer one just maps it on all the features. Personally I would've done it something like this:
+
+#+begin_src clojure
+  (defn place->cases
+    "Turns case data into a map of place to cases"
+    [case-data]
+    (reduce (fn [M obs] (assoc M (obs "Area name") (obs "Cumulative lab-confirmed cases"))) {} case-data))
+
+  (place->cases case-data)
+  ;; => {"Worcestershire" "1139", "West Sussex" "1126"}
+
+  (defn add-cases [feature cases]
+    (assoc feature :cases
+           (cases (get-in feature [:properties :LAD13NM] -1))))
+
+  (defn geojson-cases-data2 [geojson-file cases]
+    (let [geojson-data (geojson->clj geojson-file)]
+      (assoc geojson-data :features (mapv #(add-cases % (place->cases cases)) (:features geojson-data)))))
+#+end_src
+
+* Data depricated
+* view-helpers
+* views
