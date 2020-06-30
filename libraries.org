@@ -25,6 +25,8 @@
 * Data schema
 ** clojure.spec
 ** malli
+metosin/malli {:mvn/version "0.0.1-SNAPSHOT"}
+(:require [malli.core :as m])
 ** schema
 * Serialization and IO
 ** JSON

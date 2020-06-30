@@ -1,0 +1,61 @@
+#+TITLE: Clara Rules
+http://www.clara-rules.org/
+#+begin_src clojure
+  (ns clara.example
+    (:require [clara.rules :refer :all]))
+#+end_src
+
+A Forward Chaining (?) Rules engine for simplifying business logic without the cludge of a large enterprise rules system.
+
+Take some basic business rules, like
++ If a person bought more than 10 Items, she is a VIP
++ If a person has a gold membership since 2015, she is a VIP
++ If a person is a VIP, send an invitation to a special event.
+
+The typical way to do this would be to use some kind of filtering followed by a side-effecting function, like
+
+=(->> people (filter vip?) send-invitations!)=
+
+This approach tends not to be very change-friendly. (Not super clear on why TBH). A rules engine lets you set up business rules like =send-invitations= as independent units, which contain all the business logic, and the engine takes care of matching inputs to outputs, and composing those rules together.
+
+* A getting started example
+
+#+begin_src clojure
+  (defrecord SupportRequest [client level])
+  (defrecord ClientRepresentative [name client])
+
+  (defrule is-important
+    [SupportRequest (= :high level)]
+    => (println "High support requested!"))
+
+  (defrule notify-client-rep
+    [SupportRequest (= ?client client)]
+    [ClientRepresentative (= ?client client) (= ?name name)]
+    => (println "Notify" ?name "that" ?client "has a new support request"))
+
+  (-> (mk-session 'clara.example)
+      (insert (->ClientRepresentative "Alice" "Acme")
+              (->SupportRequest "Acme" :high))
+      (fire-rules))
+#+end_src
+
+* Writing rules
+Using the =defrule= macro, the format looks like this:
+
++ Rule Name
++ Left Hand Side (LHS) rule - has expressions representing the /conditions for the rule to fire/. =[Purchase ( = item :gizmo)]= translates as 'for the Purchase record I gave you, fire if the item of the record is a =:gizmo=.
++ => separates the LHS and RHS
++ RHS gives the functions to execute if the conditions are met. e.g. =(insert! (->Promotion :free-lunch :lunch))=
+
+* Writing condition expressions
+You can use variable binding in the LHS expression, use the bindings as filters in the following conditions, and then use them in the RHS as shown above, in a datalog-like way.
+
+** Fact expressions
+You can also do bindings using the =<-= operator:
+=[?person <- Person ( = first-name "Alice") ( = ?last-name last-name)]=
+Here you end up with ?person bound to Persons with first name Alice, and ?last-name being the last names of those people.
+
+** Booleans
+use =:or= and =:and= with nested expressions
+
+=[:or [Customer ( = status :vip)] [Promotion ( = type :discount-month)]]=
