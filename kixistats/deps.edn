@@ -1,0 +1,2 @@
+{:deps
+ {kixi/stats {:mvn/version "0.5.4"}}}

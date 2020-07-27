@@ -207,11 +207,11 @@ This means we can query an entity at a specific instant and see its state"
 
 
 (defn filter-type [type]
-  (crux/q (crux/db cruxcn
-          {:find  '[name]
-           :where '[[e :type t]
-                    [e :common-name name]]
-           :args  [{'t type}]}))
+  (crux/q (crux/db crux
+                   {:find  '[name]
+                    :where '[[e :type t]
+                             [e :common-name name]]
+                    :args  [{'t type}]})))
 
 (filter-type :element/gas)
 ;; => #{["Nitrogen"]}

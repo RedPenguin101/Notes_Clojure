@@ -1,0 +1,360 @@
+#+TITLE: Clojure Coding Journal
+
+* 2020-07-05
+** Created an investment event generator for Qniform
+*** Generating n uuids with =repeatedly=
+#+begin_src clojure
+  (defn- generate-uids [n]
+    (take n (repeatedly #(java.util.UUID/randomUUID))))
+#+end_src
+
+=repeatedly= is for generating infinite sequences of side-effecty functions (like generating random numbers)
+
+*** RNG with =rand= and =rand-nth=
+I used the most basic type of RNG, =(rand)=, with no arguments, to generate a float between 0 and 1, both to determine how much of the investment to sell, and what the pnl should be
+
+#+begin_src clojure
+  (defn- new-decrease [previous-events]
+    (let [cost-basis (* (rand) (calculate-holding previous-events))
+          pnl        (* cost-basis (/ (- (rand) 0.5) 2))]
+      {:event/type     :investment-decrease
+       :pnl            pnl
+       :consideration  (+ cost-basis pnl)
+       :event/currency :USD}))
+#+end_src
+
+I also used =rand-nth=, which randomly selects an element from a collection, to decide whether to do an increase, decrease or income event
+
+#+begin_src clojure
+  (def possible-events [new-increase new-income new-decrease])
+
+  (defn- new-event [previous-events]
+    (if (< (calculate-holding previous-events) 1000000)
+      (conj previous-events (new-increase previous-events))
+      (conj previous-events ((rand-nth possible-events) previous-events))))
+#+end_src
+
+*** Adding dates with Tick
+Easy one this: adding x days to a date with tick =(t/+ date (t/new-period x :days))=
+
+#+begin_src clojure
+  (defn generate-dates [start number]
+    (map str
+         (t/range (t/date start) (t/+ (t/date start) (t/new-period number :days)))))
+#+end_src
+* 2020-07-06
+** Trivial codewars problem about smilies - though remember, if you're dealing with text, your first thought should be 'can I use regex for this?'
+My solution:
+#+begin_src clojure
+  (defn smile? [emoji]
+    (and (< 1 (count emoji) 4)
+         (#{\: \;} (first emoji))
+         (#{\) \D} (last emoji))
+         (if (= (count emoji) 3) (#{\- \~} (second emoji)) true)))
+
+  (defn count-smileys [arr]
+    (count (filter smile? arr)))
+#+end_src
+
+The best solution
+#+begin_src clojure
+  (defn count-smileys [arr]
+    (count (filter #(re-find #"^[:;][-~]?[)D]" %) arr)))
+#+end_src
+** Doing a reporting transformation for qniform: =str= when used on a keyword keeps the colon. Use =name= to get rid of it
+** Speccing a csv - i.e. spec on something with a head and body
+Use regex, =cat= and =*=.
+
+#+begin_src clojure
+  (s/def ::tb-report (s/cat :header (s/tuple #{"Account"} #{"Dr"} #{"Cr"})
+                            :body (s/* ::tb-row)))
+#+end_src
+* 2020-07-07
+** Codewars - good in principle solution, but sloppy on readability!
+Problem was trailing zeros on factorials. Basically everything with a 5 in it adds a 0. But powers of 5 multiply the effects - e.g. 25 adds 2 zeros, because you're timesing by 5 twice.
+
+So easy problem. My first code was
+
+ #+begin_src clojure
+   (defn zeros [n] 
+    (->> (iterate inc 1)
+         (map #(int (/ n (Math/pow 5 %))))
+         (take-while #(> % 0))
+         (reduce +)))
+ #+end_src
+ 
+But this was sloppy in a couple of easy ways I should've picked up on - all mistakes I've made and corrected before:
+
++ You can just create an infinite seq of powers of 5, rather than the =(iterate inc 1)= and do it in the next line. Bad conveyance of what you're doing
++ You don't need to do =#(> % 0)= /just use pos?/. How many times do you have to learn that lesson?
++ =(int (/ x y))= is a dumb way of doing =(quot x y)=
+
+Here's the refactored version
+
+#+begin_src clojure
+  (defn zeros [n]
+    (->> (iterate #(* % 5) 5)
+         (map #(quot n %))
+         (take-while pos?)
+         (reduce +)))
+#+end_src
+
+If I were to got the whole way I might do something like this to provide better readability.
+
+#+begin_src clojure
+  (def powers-of-5 (iterate #(* % 5) 5))
+  (defn whole-divisions-of [n] (partial quot n))
+
+  (defn zeros [n]
+    (->> powers-of-5
+         (map (whole-divisions-of n))
+         (take-while pos?)
+         (reduce +)))
+#+end_src
+*** Creating an infinite sequence
+I struggled to remember how to do this again.
+
+=(range)=
+or
+=(iterate f init)=
+
+Easy
+* 2020-07-08
+** Codewars
+The problem was to find pangrams. Happy with the solution. strings love regex!
+
+#+begin_src clojure
+  (def all-letters #"abcdefghijklmnopqrstuvwxyz")
+
+  (defn pangram? [sentence]
+    (->> sentence
+         lower-case
+         sort
+         dedupe
+         (apply str)
+         (re-find all-letters)
+         boolean))
+#+end_src
+
+*** regex
+The difference between =re-matches= and =re-find= is that find looks for any occurance of the re in the string. matches has to be exactly the string.
+
+so =(re-find #"hello" "hello world") -> true=
+but =(re-matches #"hello" "hello world") -> false=
+*** if something is not truthy, true, else false
+wrap it in =boolean=
+*** Then I looked at the other answers :(
+Obviously, sets so much better. Check this out
+
+#+begin_src clojure
+  (defn pangram? [sentence]
+    (set/subset? all-letters-set (set sentence)))
+#+end_src
+
+Remember, sets are king when talking about membership
+* 2020-07-09
+** Codewars
+Problem was to find the sum of intervals. Was one of those beautiful moments when you start down a really messy path and something simple just pops into your head
+
+My answer 
+
+#+begin_src clojure
+  (defn sum-intervals [vs]
+    (-> (mapcat (fn [[x y]] (range x y)) vs)
+        set
+        count))
+#+end_src
+
+I could've gone one better with 
+
+#+begin_src clojure
+  (defn sum-intervals [vs]
+    (-> (mapcat #(apply range %) vs)
+        set
+        count))
+#+end_src
+
+But pretty happy with my solution.
+
+It's actually similar to that AOC 2019 'wire' problem, which was about intersecting lines in a 2d grid (similiar to how this is in a 1d plane!) and I tried to to all sorts of fancy stuff about calculating intersections and stuff. Much easier to to enumerate each point the line passes through, and see if there are any intersections.
+
+So I guess the lesson is: why calculate when you can enumerate?
+* 2020-07-10
+** Running generative tests as part of the test suite
+From robertfw in Clojurians Slack
+
+I have a little helper function for doing this.
+
+#+begin_src clojure
+  (defn check-ns-fdefs
+    ([ns-sym-or-syms]
+     (check-ns-fdefs ns-sym-or-syms 1000))
+    ([ns-sym-or-syms num-tests]
+     (let [summary (-> (stest/enumerate-namespace ns-sym-or-syms)
+                       (stest/check {:clojure.spec.test.check/opts
+                                     {:num-tests num-tests}})
+                       stest/summarize-results)]
+       (is (= (:total summary) (:check-passed summary))
+           "generative check test failed, see output for details"))))
+#+end_src
+
+and then in a test namespace i can use
+
+#+begin_src clojure
+  (deftest check-fdefs
+    (check-ns-fdefs 'some.namespace 100))
+#+end_src
+
+** Codewars
+Easy problem, quite liked my solution, couldn't find anything better in the examples (some of which I thought were pretty bad but getting best practices / clever upvotes)
+
+The most upvoted one was the same as mine but broken down into the reducing function, the 'opposites' definition (which was a map rather than a set) and the applicator with the reduce call.
+
+#+begin_src clojure
+  (defn dirReduc [arr]
+    (seq (reduce
+           (fn [dirs next-dir]
+             (into []
+                   (if (#{#{"NORTH" "SOUTH"} #{"EAST" "WEST"}} (hash-set (last dirs) next-dir))
+                     (butlast dirs)
+                     (conj dirs next-dir))))
+           []
+           arr)))
+#+end_src
+
+Only reminder I would add here is that you can use =not-empty= in place of seq and it will usually read better without changing behaviour.
+* 2020-07-12
+** COMMENT Codewars was egyptian fractions finding
+#+begin_src clojure
+  (defn greedy-egypt 
+    "Fibonnaci's Greedy Algorithm for Egyptian Fractions
+    https://en.wikipedia.org/wiki/Greedy_algorithm_for_Egyptian_fractions"
+    [r]
+    (let [n (numerator r)
+          d (denominator r)]
+      (vector  (/ 1 (inc (quot d n)))
+               (/ (mod (- d) n) (* d (inc (quot d n)))))))
+
+  (defn iterate-ge [xs]
+    (let [x (last xs)]
+      (cond
+        (> x 1)             (recur (vector (quot x 1) (- x (quot x 1))))
+        (zero? x)           (butlast xs)
+        (= 1 (numerator x)) xs
+        :else               (recur (concat (butlast xs) (greedy-egypt x))))))
+
+  (defn decompose [r]
+    (map str (iterate-ge [(rationalize (edn/read-string r))])))
+#+end_src
+
+What I learned:
++ Recursion is hard
++ That Egyptian fractions are a thing, and Fibonnaci was the guy who figured it all out
++ working with rational numbers, specifically =ratio?=, =rationalize=, =numerator= and =denominator=.
++ You don't need edn to =read-string=, just use the built in.
++ Instead of using elaborate =Math/ceil= etc. to round up and down, just use =(quot x y)= (with an =inc= if rounding up)
++ You can use =(quot x 1)= to see the nearest whole number.
+
+EDIT: Oh I am a moron, there's a /much/ better way to do it than that. I don't see anyone else in the solutions has it either. Super psyched to have discovered this.
+
+#+begin_src clojure
+  (defn f [r]
+    (cond (> r 1)             (quot r 1)
+          (zero? r)           0
+          (= 1 (numerator r)) r
+          :else               (/ 1 (inc (quot (denominator r) (numerator r))))))
+
+  (defn g [r]
+    (lazy-seq (cons (f r) (g (- r (f r))))))
+
+  (defn decompose [r]
+    (->> r
+         read-string
+         rationalize
+         g
+         (take-while pos?)
+         (map str)))
+#+end_src
+
+Much neater, shorter if you ignore the macro-expand (11 lines to 6) and much /better/. Look how simple the conditional is here! If bigger than 1, give the floored integer, if zero give zero, ir numerator is 1, r, otherwise find the next 1/N term. Then everything else is window dressing, all the logic is in the conditional.
+
+I can't stop reading it, it's beautiful.
+* 2020-07-16
+** Codewars
+PIN finder - you have a pinpad and a guess at what the PIN is, but for each digit it could be a digit adjacent to the guess. Pretty simple
+
+I did what I would do in real life: use the combinatorics =cartesian-product= function, stolen from the library and pasted in:
+
+#+begin_src clojure
+  (def adjacents {1 #{1 2 4}
+                  2 #{1 2 3 5}
+                  3 #{2 3 6}
+                  4 #{1 4 5 7}
+                  5 #{2 4 5 6 8}
+                  6 #{3 5 6 9}
+                  7 #{4 7 8}
+                  8 #{5 7 8 9 0}
+                  9 #{8 9 6}
+                  0 #{0 8}})
+
+  (defn get-pins [observed]
+    (->> (map #(Character/digit % 10) observed)
+         (map #(get adjacents %))
+         (apply cartesian-product)
+         (map #(apply str %))))
+#+end_src
+
+There were a couple of clever, though I think more complicated solutions:
+
+#+begin_src clojure
+  (def neighbors {\1 "124"
+                  \2 "1235"
+                  \3 "236"
+                  \4 "1457"
+                  \5 "24568"
+                  \6 "3569"
+                  \7 "478"
+                  \8 "57890"
+                  \9 "689"
+                  \0 "80"})
+
+
+  (defn get-pins [input]
+    (->> (reduce #(for [x %1
+                        y (neighbors %2)]
+                    (conj x y)) [[]] (seq input))
+         (map str/join))) 
+#+end_src
+
+Here a for comprehension is use to build up an accumulator. Over every input character it creates a list item for every combination of the neighbours with what's already in the accumulator
+
+So for "123", the first pass would yield and accumulator of
+=[1 2 4]=
+
+Second pass would get you
+=[11 12 13 15, 21 22 23 25, 41 42 43 45]=
+
+Third pass
+=[112 113 116, 122 123 126, 132 133 136, 152 153 156 ,,,,]=
+
+Building up the outputs. Very nice! but I think mine is more immediately graspable what it's doing
+
+The second one that caught my eye was 
+
+#+begin_src clojure
+  (def corrections {
+    \1 "124"  \2 "1235"  \3 "236"
+    \4 "1457" \5 "24568" \6 "3569"
+    \7 "478"  \8 "57890" \9 "689"
+              \0 "80"
+  })
+
+  (defn get-pins [observed]
+    (if (empty? observed)
+      [""]
+      (let [heads (corrections (first observed)) tails (get-pins (rest observed))]
+        (for [d heads ds tails] (str d ds)))))
+#+end_src
+
+This uses the recursive property that =pins(x y z)= is =x1 pins(y z), x2 pins(y z), x3 pins(y z), ...= (where x1, x2, x3 ... are the possible reaplcements for x)
+

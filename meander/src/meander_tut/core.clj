@@ -5,7 +5,7 @@
   "Meander is a clojure library for declarative data transformation.
   It's goal is to make the inputs and outputs of data transformations
   clear to the person reading the code.
-  
+
   This document will talk about:
   * Match: the simplest function: give it data, a pattern, and expression
     and it will match the data on the pattern, and execute the expression
@@ -18,21 +18,18 @@
 (comment 
   "the match function is traditional pattern matching."
   (m/match x
-    pattern_1 expr_1
-    
-    pattern_n expr_n)
+           pattern_1 expr_1
+           pattern_n expr_n)
   "It tries to match data x against one of the patterns specified,"
   "and if some pattern i matches, it will execute expr_i")
 
 (m/match
- {:a 123 :b 456 :c "abc"} ;; the data
- 
- {:a ?a :b ?b :c ?c} ;; the pattern to match against
- 
- {:target-1 ?a ;; the expression to evaluate
-  :target-2 ?b
-  :target-3 ?c
-  :target-4 (+ ?a ?b)})
+  {:a 123 :b 456 :c "abc"} ;; the data
+  {:a ?a :b ?b :c ?c} ;; the pattern to match against
+  {:target-1 ?a ;; the expression to evaluate
+   :target-2 ?b
+   :target-3 ?c
+   :target-4 (+ ?a ?b)})
 
 ;; match example from the official site
 
