@@ -148,4 +148,18 @@ configure live css reload with `^{:css-dirs ["resources/public/css"]}` in your b
 
 `$ clojure -m figwheel.main --compile hello.cruel-world --repl`
 
-
+## Example reagent html index
+```html
+<!DOCTYPE html>
+<html>
+    <head>
+        <!-- this refers to resources/public/css/style.css -->
+        <link href="css/style.css" rel="stylesheet" type="text/css">
+    </head>
+    <body>
+        <div id="app"></div>
+	      <!-- this refers to target/public/cljs-out/cruel-main.js -->
+        <script src="cljs-out/dev-main.js"></script>
+    </body>
+</html>
+```
