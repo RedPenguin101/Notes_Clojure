@@ -5,22 +5,51 @@
 2. create `deps.edn`
 
 ```clojure
-{:deps {com.bhauman/figwheel-main {:mvn/version "0.2.11"}
-        com.bhauman/rebel-readline-cljs {:mvn/version "0.1.4"}}
- :paths ["src" "target" "resources"]}
+{:deps {com.bhauman/figwheel-main       {:mvn/version "0.2.11"}
+        com.bhauman/rebel-readline-cljs {:mvn/version "0.1.4"}
+        reagent                         {:mvn/version "1.0.0-alpha2"}}
+
+ :paths ["src" "target" "resources"]
+
+ :aliases {:dev {:main-opts ["-m" "figwheel.main"
+                             "--build" "dev"
+                             "--repl"]}}}
 ```
 
-3. create build file
+3. create build file `dev.cljs.edn`
 
 ```clojure
 ^{:css-dirs ["resources/public/css"]}
-{:main hello.cruel-world}
+{:main hello.world}
 ```
 
-4. create a hello world app in `src/hello/cruel_world.cljs`
-5. test the build with `clojure -m figwheel.main --build cruel --repl`, calling a function in your hello world from the repl
-6. create an `index.html` in `resources/public` and a `style.css` in `resources/public/css`
+4. create a hello world app in `src/hello/world.cljs`
+5. create an `index.html` in `resources/public` and a `style.css` in `resources/public/css`
+6. test the build with `clj -A:dev`, calling a function in your hello world from the repl
+7. Put a div with id `app` in your index, and rewrite your main cljs file to look something like this:
 
+```clojure
+(ns ^:figwheel-hooks tallex.time-dive
+  (:require
+    [reagent.dom :as r.dom]))
+
+
+(defn app []
+  [:h1.site__title
+    [:span.site__title-text "Time Dive"]])
+
+
+(defn mount []
+  (r.dom/render [app] (js/document.getElementById "app")))
+
+
+(defn ^:after-load re-render []
+  (mount))
+
+
+(defonce start-up (do (mount) true))
+```
+8. reload your app to make sure it's working
 
 ## Official Figwheel Tut
 https://figwheel.org/tutorial.html
