@@ -26,28 +26,6 @@
       (-> js/document .getSelection .removeAllRanges)
       (-> js/document .getSelection (.addRange selected)))))
 
-"
-const copyToClipboard = str => {
-  const el = document.createElement('textarea');
-  el.value = str;
-  el.setAttribute('readonly', '');
-  el.style.position = 'absolute';
-  el.style.left = '-9999px';
-  document.body.appendChild(el);
-  const selected =
-    document.getSelection().rangeCount > 0
-      ? document.getSelection().getRangeAt(0)
-      : false;
-  el.select();
-  document.execCommand('copy');
-  document.body.removeChild(el);
-  if (selected) {
-    document.getSelection().removeAllRanges();
-    document.getSelection().addRange(selected);
-  }
-};
-"
-
 (defn app []
   [:div
    [:h1 "Markdownify"]
@@ -61,14 +39,24 @@ const copyToClipboard = str => {
                  :style     {:resize "none"
                              :height "500px"
                              :width  "100%"}}]
-     [:button {:on-click #(copy-to-clipboard @markdown)}
+     [:button {:on-click #(copy-to-clipboard @markdown)
+               :style    {:background-color :green
+                          :padding          "1em"
+                          :color            :white
+                          :border-radius    10}}
       "Copy Markdown"]]
     [:div
      {:style {:flex         "1"
               :padding-left "2em"}}
      [:h2 "HTML preview"]
      [:div {:style                   {:height "500px"}
-            :dangerouslySetInnerHTML {:__html (md->html @markdown)}}]]
+            :dangerouslySetInnerHTML {:__html (md->html @markdown)}}]
+     [:button {:on-click #(copy-to-clipboard (md->html @markdown))
+               :style    {:background-color :green
+                          :padding          "1em"
+                          :color            :white
+                          :border-radius    10}}
+      "Copy HTML"]]
     #_[:div
        [:h2 "Raw HTML"]
        [:div (md->html @markdown)]]]])
