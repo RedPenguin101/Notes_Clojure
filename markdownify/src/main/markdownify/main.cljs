@@ -1,8 +1,15 @@
-(ns markdownify.main)
+(ns markdownify.main
+  (:require [reagent.core :as r]))
+
+(defn app []
+  [:h1 "Hello World"])
+
+(defn mount! []
+  (r/render [app]
+            (.getElementById js/document "app")))
 
 (defn main! []
-  (println "Loaded"))
+  (mount!))
 
 (defn reload! []
-  (println "Reloaded"))
-
+  (mount!))
