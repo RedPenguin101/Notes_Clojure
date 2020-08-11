@@ -85,13 +85,7 @@
               :padding-left "2em"}}
      [:h2 "HTML preview"]
      [:div {:style                   {:height "500px"}
-            :dangerouslySetInnerHTML {:__html (->html @text-state)}}]
-     [:button {:on-click #(copy-to-clipboard  (->html @text-state))
-               :style    {:background-color :green
-                          :padding          "1em"
-                          :color            :white
-                          :border-radius    10}}
-      "Copy HTML"]]]])
+            :dangerouslySetInnerHTML {:__html (->html @text-state)}}]]]])
 
 (defn mount! []
   (r/render [app]
