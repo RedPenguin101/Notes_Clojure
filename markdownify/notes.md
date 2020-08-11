@@ -77,3 +77,5 @@ Next we **mount** the virtual (react/reagent) DOM into the DOM, at the element c
 So you need to create the 'app' in both main and index.html
 
 Then you need to call mount! in you main! and reload!
+
+Use defonce for reagent atom so it won't redef when you reload
