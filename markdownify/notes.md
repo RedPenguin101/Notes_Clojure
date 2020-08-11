@@ -79,3 +79,27 @@ So you need to create the 'app' in both main and index.html
 Then you need to call mount! in you main! and reload!
 
 Use defonce for reagent atom so it won't redef when you reload
+
+use https://www.npmjs.com/package/showdown for markdown->html renderer
+
+Look for the `npm install --save showdown`
+
+add to your requiers like `["showdown" :as showdown]`
+
+Copy the javascript from the exmaples section and turn it into clojurescript
+
+```javascript
+var showdown  = require('showdown'),
+    converter = new showdown.Converter(),
+    text      = '# hello, markdown!',
+    html      = converter.makeHtml(text);
+```
+
+```clojurescript
+(defonce showdown-converter (showdown/Converter. )) ;; . notation is the 'new'
+
+(defn md->html [md]
+  (.makeHtml showdown-converter md))
+  
+[:div (md->html @markdown)]
+```
