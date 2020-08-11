@@ -3,6 +3,16 @@
             ["showdown" :as showdown]))
 
 (defonce showdown-converter (showdown/Converter. ))
+(defonce flash-message (r/atom nil))
+(defonce flash-timeout (r/atom nil))
+
+(defn flash
+  ([text]
+   (flash text 3000))
+  ([text ms]
+   (js/clearTimeout @flash-timeout)
+   (reset! flash-message text)
+   (reset! flash-timeout (js/setTimeout #(reset! flash-message nil) ms))))
 
 (defn md->html [md]
   (.makeHtml showdown-converter md))
@@ -42,6 +52,21 @@
 
 (defn app []
   [:div
+   [:div {:style {:position         "absolute"
+                  :margin           :auto
+                  :left             0
+                  :right            0
+                  :text-align       :center
+                  :max-width        200
+                  :padding          "1em"
+                  :background-color "yellow"
+                  :z-index          100
+                  :border-radius    10
+                  :transform        (if @flash-message
+                                      "scaleY(1)"
+                                      "scaleY(0)")
+                  :transition       "transform 0.1s ease-out"}}
+    @flash-message]
    [:h1 "Markdownify"]
    [:div
     {:style {:display :flex}}
@@ -54,9 +79,11 @@
                                        :value  (-> event .-target .-value)}))
                  :value     (->md @text-state)
                  :style     {:resize "none"
-                             :height "500px"
+                             :height "300px"
                              :width  "100%"}}]
-     [:button {:on-click #(copy-to-clipboard (->md @text-state))
+     [:button {:on-click (fn []
+                           (copy-to-clipboard (->md @text-state))
+                           (flash "Markdown copied to clipboard"))
                :style    {:background-color :green
                           :padding          "1em"
                           :color            :white
@@ -72,9 +99,11 @@
                                  :value  (-> event .-target .-value)}))
                  :value     (->html @text-state)
                  :style     {:resize "none"
-                             :height "500px"
+                             :height "300px"
                              :width  "100%"}}]
-     [:button {:on-click #(copy-to-clipboard (->html @text-state))
+     [:button {:on-click (fn []
+                           (copy-to-clipboard (->html @text-state))
+                           (flash "HTML copied to clipboard"))
                :style    {:background-color :green
                           :padding          "1em"
                           :color            :white
