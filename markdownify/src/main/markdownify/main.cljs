@@ -11,11 +11,26 @@
 
 (defn app []
   [:div
-   [:h1 "Hello World"]
-   [:textarea {:on-change #(reset! markdown (-> % .-target .-value))
-               :value     @markdown}]
-   [:div {:dangerouslySetInnerHTML {:__html (md->html @markdown)}}]
-   [:div (md->html @markdown)]])
+   [:h1 "Markdownify"]
+   [:div
+    {:style {:display :flex}}
+    [:div
+     {:style {:flex "1"}}
+     [:h2 "Markdown"]
+     [:textarea {:on-change #(reset! markdown (-> % .-target .-value))
+                 :value     @markdown
+                 :style     {:resize "none"
+                             :height "500px"
+                             :width  "100%"}}]]
+    [:div
+     {:style {:flex         "1"
+              :padding-left "2em"}}
+     [:h2 "HTML preview"]
+     [:div {:style                   {:height "500px"}
+            :dangerouslySetInnerHTML {:__html (md->html @markdown)}}]]
+    #_[:div
+       [:h2 "Raw HTML"]
+       [:div (md->html @markdown)]]]])
 
 (defn mount! []
   (r/render [app]
