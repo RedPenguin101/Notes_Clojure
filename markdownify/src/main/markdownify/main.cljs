@@ -2,9 +2,6 @@
   (:require [reagent.core :as r]
             ["showdown" :as showdown]))
 
-(defonce markdown (r/atom ""))
-(defonce html     (r/atom ""))
-
 (defonce showdown-converter (showdown/Converter. ))
 
 (defn md->html [md]
@@ -12,6 +9,19 @@
 
 (defn html->md [html]
   (.makeMarkdown showdown-converter html))
+
+(defonce text-state (r/atom {:format :md
+                             :value  ""}))
+
+(defn ->md [{:keys [format value]}]
+  (case format
+    :md   value
+    :html (html->md value)))
+
+(defn ->html [{:keys [format value]}]
+  (case format
+    :md   (md->html value)
+    :html value))
 
 "https://hackernoon.com/copying-text-to-clipboard-with-javascript-df4d4988697f"
 (defn copy-to-clipboard [s]
@@ -39,13 +49,14 @@
      {:style {:flex "1"}}
      [:h2 "Markdown"]
      [:textarea {:on-change (fn [event]
-                              (reset! markdown (-> event .-target .-value))
-                              (reset! html (md->html @markdown)))
-                 :value     @markdown
+                              (reset! text-state
+                                      {:format :md
+                                       :value  (-> event .-target .-value)}))
+                 :value     (->md @text-state)
                  :style     {:resize "none"
                              :height "500px"
                              :width  "100%"}}]
-     [:button {:on-click #(copy-to-clipboard @markdown)
+     [:button {:on-click #(copy-to-clipboard (->md @text-state))
                :style    {:background-color :green
                           :padding          "1em"
                           :color            :white
@@ -55,13 +66,15 @@
      {:style {:flex "1"}}
      [:h2 "HTML"]
      [:textarea {:on-change (fn [event]
-                              (reset! html (-> event .-target .-value))
-                              (reset! markdown (html->md @html)))
-                 :value     @html
+                              (reset!
+                                text-state
+                                {:format :html
+                                 :value  (-> event .-target .-value)}))
+                 :value     (->html @text-state)
                  :style     {:resize "none"
                              :height "500px"
                              :width  "100%"}}]
-     [:button {:on-click #(copy-to-clipboard @html)
+     [:button {:on-click #(copy-to-clipboard (->html @text-state))
                :style    {:background-color :green
                           :padding          "1em"
                           :color            :white
@@ -72,14 +85,13 @@
               :padding-left "2em"}}
      [:h2 "HTML preview"]
      [:div {:style                   {:height "500px"}
-            :dangerouslySetInnerHTML {:__html @html}}]
-     [:button {:on-click #(copy-to-clipboard @html)
+            :dangerouslySetInnerHTML {:__html (->html @text-state)}}]
+     [:button {:on-click #(copy-to-clipboard  (->html @text-state))
                :style    {:background-color :green
                           :padding          "1em"
                           :color            :white
                           :border-radius    10}}
-      "Copy HTML"]]
-    ]])
+      "Copy HTML"]]]])
 
 (defn mount! []
   (r/render [app]
