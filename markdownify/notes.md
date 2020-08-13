@@ -7,7 +7,7 @@ curl-sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
 sudo apt-get install -y nodejs
 ```
 
-`npm init`o
+`npm init`
 creates package.json. you need name, version, empty scripts
 
 `npm install -g shadow-cljs` installs globally
