@@ -1,42 +1,73 @@
 (ns normand.reactevents
-  (:require [reagent.core :as r]))
+  (:require [reagent.core :as r]
+            [reagent.dom :as rdom]))
 
-"lists keys and lazyness"
+"Types of components"
 
-;; this returns a data structure
+;; a form1 is a function that returns hiccup
+;; it only rerenders when its arguments change
 (defn form1subcomponent [link-text]
   [:p [:a {:href     "#/"
            :on-click (fn [e]
                        (.preventDefault e)
-                       ;; this prevents the default behaviour, but doesn't stop
-                       ;; the propagation
                        (js/console.log "Link"))} link-text]])
 
-(def pets [{:type "Dog" :name "Fido" :noise "woof"}
-           {:type "Cat" :name "Mittens" :noise "meow"}
-           {:type "Snake" :name "Snape" :noise "hiss"}
-           {:type "Tarantula" :name "Cuddles" :noise "I will kill you in your sleep"}])
+;; a form2 is a function that returns a function that returns hiccup
+;; generally you'll use it for component local state
+;; the outer function will only be called on mounting. The inner function will
+;; be called whenever the component re-renders
+(defn counting-button [text]
+  (let [state (r/atom 0)]
+    (fn [text]
+      [:button
+       {:on-click #(swap! state inc)}
+       ;; the virtual dom will notice the r/atom is changed, and will rerender
+       (str text " -- " @state)])))
 
 
-(defn pets-component [pet]
-  [:div.pet
-   [:h3 (:type pet)]
-   [:p (str (:name pet) " is a " (:type pet))]
-   [:p (str "'" (:noise pet) "'")]])
+;; form3 - very rare you'll need it
+;; used for fine control on lifecycle
+;; returns a create-class - creates the react class
+;; you need it when you need to use the imperative API of something
+;; the reagent-render method, when used alone, generates output equivalent to a form2
+(defn canvas []
+  (r/create-class
+    (let [size (r/atom 10)
+          id   (js/setInterval (fn [] (swap! size #(mod (inc %) 200)))
+                               100)]
+      {:reagent-render
+       (fn []
+         @size ;; need to deref in order to trigger the re-render
+         ;; - note it just gets thrown away, only the last form (below) is returned
+         [:canvas {:style {:width  200
+                           :height 200
+                           :border "1px solid green"}}])
 
+       :display-name "canvas with sqaure"
+
+       :component-did-mount ;;called on first mounting
+       (fn [comp]
+         (let [node (rdom/dom-node comp)
+               ctx  (.getContext node "2d")]
+           (.clearRect ctx 0 0 200 200)
+           (.fillRect ctx 10 10 @size @size)))
+
+       :component-did-update ;; after subsequent renders
+       (fn [comp]
+         (let [node (rdom/dom-node comp)
+               ctx  (.getContext node "2d")]
+           (.clearRect ctx 0 0 200 200)
+           (.fillRect ctx 10 10 @size @size)))
+
+       :component-will-unmount ;;this is like garbage collection for components
+       (fn [comp]
+         (js/clearInterval id))})))
 
 (defn react-panel []
   (let [state (r/atom 0)]
     [:div.top
-     (doall (for [pet pets]
-              [:div.petwrap
-               {:key (str (:name pet) (:type pet))}
-               ;; need a unique, stable key when listing
-               ;; could also use ^{:key name} - the metadata method
-               @state
-               ;; this will generate a warning because for creates a lazy seq
-               ;; use a doall around your for if you deref state
-               [pets-component pet]]))
+     #_[:div.canvas [canvas]]
+     [counting-button "click me"]
      [:hr]
      [:div.wrapper
       {:on-click (fn [event]
@@ -44,6 +75,6 @@
       [:div.inner
        {:on-click (fn [event]
                     (js/console.log "Inner gets triggered first"))}
-       [form1subcomponent "passed in text"] ;; this will get turned into a react component
-       (form1subcomponent "not a component") ;; this isn't a react component
+       [form1subcomponent "passed in text"]
+       (form1subcomponent "not a component")
        [:p "Other content"]]]]))
