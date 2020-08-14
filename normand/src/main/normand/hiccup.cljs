@@ -1,16 +1,22 @@
 (ns normand.hiccup
-  (:require [reagent.core :as r]))
+  (:require [reagent.core :as r]
+            [clojure.string :as str]))
 
-"Attributes in hiccup"
-"common to style inline in react and reagent"
-"Use a map"
-"inline is good because you can use stateful properties"
+"Class Pattern - an alternative to string concatenation for elements with multiple classes"
+
+(defn cs [& args]
+  (str/join " " (map name (filter identity args))))
 
 (defn hiccup-panel []
   (let [title        "Show"
         dontshow     nil
-        border-color "red"]
+        border-color "red"
+        active?      nil]
     [:div
+     [:div {:class (str "content" " " (when active? "active"))}
+      "Ugly string concat!"]
+     [:div {:class (cs :content :row (when active? :active))}
+      "Nice class pattern"]
      nil ;; nil/false is ignored - useful
      (when title [:h1 title])
      false
