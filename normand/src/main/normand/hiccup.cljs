@@ -2,7 +2,7 @@
   (:require [reagent.core :as r]
             [clojure.string :as str]))
 
-"Class Pattern - an alternative to string concatenation for elements with multiple classes"
+"Class and id shortcuts"
 
 (defn cs [& args]
   (str/join " " (map name (filter identity args))))
@@ -13,10 +13,9 @@
         border-color "red"
         active?      nil]
     [:div
-     [:div {:class (str "content" " " (when active? "active"))}
-      "Ugly string concat!"]
-     [:div {:class (cs :content :row (when active? :active))}
-      "Nice class pattern"]
+     [:div
+      [:p#hiccup.big.centered "shortcuts! # for id (1 only) . for class"]
+      [:p "use this for permanent stuff, use map/properties for dynamic"]]
      nil ;; nil/false is ignored - useful
      (when title [:h1 title])
      false
