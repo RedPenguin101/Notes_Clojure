@@ -5,7 +5,10 @@
   "src/test"]
 
  :dependencies
- [[reagent "1.0.0-alpha2"]]
+ [[reagent "1.0.0-alpha2"]
+  [re-frame "1.0.0"]
+  [day8.re-frame/http-fx "0.2.1"]
+  [cljs-ajax "0.8.0"]]
 
  :dev-http {9090 "public/"}
 

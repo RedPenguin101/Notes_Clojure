@@ -1,21 +1,29 @@
 (ns normand.reactevents
   (:require [reagent.core :as r]
-            [reagent.dom :as rdom]))
+            [reagent.dom :as rdom]
+            [re-frame.core :as rf]
+            [day8.re-frame.http-fx]
+            [ajax.core :as ajax]))
 
-"Types of components"
+"Accessing the DOM"
+"you don't need to do this often - let react decide how to hanle that stuff"
+"refs let you get at deeply nested dom nodes and save them when you want them"
 
-;; a form1 is a function that returns hiccup
-;; it only rerenders when its arguments change
+(rf/reg-event-fx
+  :save-image
+  (fn [cofx [_ form-data]]
+    {:http-xhrio {:uri            "https://whispering-cove-34851.herokuapp.comm/avatar"
+                  :body           form-data
+                  :method         :post
+                  :timeout        10000
+                  :reponse-format (ajax/json-response-format {:keywords? true})}}))
+
 (defn form1subcomponent [link-text]
   [:p [:a {:href     "#/"
            :on-click (fn [e]
                        (.preventDefault e)
                        (js/console.log "Link"))} link-text]])
 
-;; a form2 is a function that returns a function that returns hiccup
-;; generally you'll use it for component local state
-;; the outer function will only be called on mounting. The inner function will
-;; be called whenever the component re-renders
 (defn counting-button [text]
   (let [state (r/atom 0)]
     (fn [text]
@@ -25,11 +33,6 @@
        (str text " -- " @state)])))
 
 
-;; form3 - very rare you'll need it
-;; used for fine control on lifecycle
-;; returns a create-class - creates the react class
-;; you need it when you need to use the imperative API of something
-;; the reagent-render method, when used alone, generates output equivalent to a form2
 (defn canvas []
   (r/create-class
     (let [size (r/atom 10)
@@ -64,8 +67,25 @@
          (js/clearInterval id))})))
 
 (defn react-panel []
-  (let [state (r/atom 0)]
+  (let [state (r/atom 0)
+        refs  (r/atom nil)]
     [:div.top
+     [:div.inner
+      [:form {:on-submit (fn [e]
+                           (.preventDefault e))
+              ;; ref takes one argument, which is the form dom element
+              ;; swap it into local state
+              ;; ref will give you a null if unmounted
+              :ref       #(reset! refs %)}
+       [:input {:type      :file
+                :name      :image
+                :on-change (fn [e]
+                             (.preventDefault e)
+                             (js/console.log @refs)
+                             (rf/dispatch [:save-image
+                                           ;; get the actual real dom element
+                                           (js/FormData. @refs)]))}]]]
+     [:hr]
      #_[:div.canvas [canvas]]
      [counting-button "click me"]
      [:hr]
