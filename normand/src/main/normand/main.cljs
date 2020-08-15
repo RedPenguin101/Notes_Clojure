@@ -3,11 +3,15 @@
             [reagent.dom :as rd]
             [normand.hiccup :refer [hiccup-panel]]
             [normand.userreg :refer [forms-panel]]
+            [normand.sorted-table :refer [sorted-table]]
             [normand.reactevents :as rp]))
 
 (defn app []
   [:div
    [:h1 "hello world 2"]
+   [:div#table
+    [:h2 "Sorted Table"]
+    [sorted-table]]
    [:div#userform
     [:h2 "User Form"]
     [forms-panel]]
