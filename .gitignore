@@ -4,3 +4,4 @@ pegthing/
 *.lein-repl-history
 *.swp
 .cpcache/
+.calva/
