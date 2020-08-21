@@ -185,6 +185,10 @@ Use =cond->=
         accruals (assoc :accruals accruals))))
 #+end_src
 
+* I want to randomly
+** Select an element from a collection
+=(rand-nth coll)=
+
 * Working with numbers
 ** I want to separate a number into a collection of its digits
 #+begin_src clojure

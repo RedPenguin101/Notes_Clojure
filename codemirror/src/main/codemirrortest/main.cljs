@@ -1,32 +1,22 @@
 (ns codemirrortest.main
   (:require [reagent.core :as r]
-            [cljsjs.codemirror]))
+            ["codemirror/mode/clojure/clojure"]
+            ["react-codemirror2" :refer [UnControlled]]))
 
-(def cm-value (atom "(+ 1 1)"))
-(defonce cm (atom nil))
+(def value (r/atom "(defn hello [] {:this \"is\" :working \"well\"})"))
 
-(reset! cm (js/CodeMirror. (.createElement js/document "div")
-                           (clj->js {:lineNumbers       false
-                                     :viewportMargin    js/Infinity
-                                     :matchBrackets     true
-                                     :autofocus         true
-                                     :value             @cm-value
-                                     :autoCloseBrackets true
-                                     :mode              "clojure"})))
-
-
-(defn ta []
-  (r/create-class {:reagent-render (fn [] @cm [:div {:id "editor"}])
-                   :component-did-mount
-                   (fn [this]
-                     (when @cm
-                       (.appendChild (r/dom-node this) (.getWrapperElement @cm))))}))
-
+(defn cm []
+  (fn []
+    [:> UnControlled
+     {:value     @value
+      :options   {:mode "clojure"}
+      :on-change (fn [_ _ v] (reset! value v))}]))
 
 (defn app []
   [:div
    [:h1 "Testing Codemirror"]
-   [ta]])
+   (prn-str @value)
+   [cm]])
 
 
 (defn mount []
