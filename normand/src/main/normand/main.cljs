@@ -7,11 +7,14 @@
             [normand.sorted-table :refer [sorted-table]]
             [normand.drag-list :refer [drag-list]]
             [normand.inline :refer [inline]]
-            [normand.reactevents :as rp]))
+            [normand.reactevents :as rp]
+            [normand.codemirrcomp :refer [codemirror]]))
 
 (defn app []
   (let [db @(rf/subscribe [:all])]
     [:div
+     [:div [codemirror "Hello, World" {:lineNumbers true} println]]
+     [:hr]
      [:div.dev {:style {:border "1px solid red"}} [:p (prn-str db)]]
      [:div#drag-list [drag-list "a" "b" "c" "d"]]
      [:hr]
@@ -33,7 +36,7 @@
       [hiccup-panel]]]))
 
 
-(rf/reg-event-db 
+(rf/reg-event-db
  :initialize-db
  (fn [_ _]
    {:movies {"tt0095989" {:title "Return of the Killer Tomatoes!"
@@ -57,5 +60,5 @@
 
 (defonce _init (rf/dispatch-sync [:initialize-db]))
 
-(comment 
+(comment
   (rf/dispatch-sync [:initialize-db]))
