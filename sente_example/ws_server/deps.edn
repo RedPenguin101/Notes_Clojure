@@ -5,4 +5,5 @@
         compojure/compojure {:mvn/version "1.6.2"}
         com.taoensso/sente {:mvn/version "1.16.2"}
         ring/ring-defaults {:mvn/version "0.3.2"}
+        ring-cors/ring-cors {:mvn/version "0.1.13"}
         http-kit/http-kit {:mvn/version "2.5.3"}}}

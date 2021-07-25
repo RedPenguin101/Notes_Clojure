@@ -1,11 +1,13 @@
 (ns main
   (:require [org.httpkit.server :refer [run-server]]
+            [clojure.pprint :refer [pprint]]
             [compojure.core :as comp :refer [defroutes GET POST]]
             [clojure.data.json :as json]
             [taoensso.sente :as sente]
             [ring.middleware.keyword-params]
             [ring.middleware.params]
             [ring.middleware.session]
+            [ring.middleware.cors :refer [wrap-cors]]
             [ring.middleware.anti-forgery :refer [wrap-anti-forgery]]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
             [taoensso.sente.server-adapters.http-kit :refer (get-sch-adapter)]))
@@ -24,18 +26,18 @@
   )
 
 (defroutes routes
-  (GET "/" [] {:status 200
-               :body (json/write-str {"Hello" "World"})
-               :headers {"Content-Type" "application/json"
-                         "Access-Control-Allow-Origin" "http://localhost:9090"}})
+  (GET "/" req (do (pprint req) (println "--------------")
+                   {:status 200
+                    :body (json/write-str {"Hello" "World"})
+                    :headers {"Content-Type" "application/json"}}))
   (GET  "/chsk" req (ring-ajax-get-or-ws-handshake req))
   (POST "/chsk" req (ring-ajax-post req)))
 
-(def app (-> routes
-             (wrap-defaults site-defaults)
-             ring.middleware.keyword-params/wrap-keyword-params
-             ring.middleware.params/wrap-params
-             ring.middleware.session/wrap-session))
+(def app
+  (-> #'routes
+      (wrap-defaults site-defaults)
+      (wrap-cors :access-control-allow-credentials "true"
+                 :access-control-allow-origin [#"http://localhost/9090"])))
 
 (defn start []
   (reset! server (run-server (fn [req] (app req)) {:port 3000 :join? false})))
