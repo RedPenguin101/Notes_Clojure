@@ -5,3 +5,4 @@ pegthing/
 *.swp
 .cpcache/
 .calva/
+.lsp
