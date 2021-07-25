@@ -2,3 +2,4 @@ node_modules
 .shadow-cljs
 npm-debug.log
 public/js/
+.clj-kondo/
