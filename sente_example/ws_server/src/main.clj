@@ -1,5 +1,5 @@
 (ns main
-  (:require [ring.adapter.jetty :as jetty]
+  (:require [org.httpkit.server :refer [run-server]]
             [compojure.core :as comp :refer [defroutes]]
             [clojure.data.json :as json]))
 
@@ -9,14 +9,15 @@
   (comp/GET "/" [] {:status 200
                     :body (json/write-str {"Hello" "World"})
                     :headers {"Content-Type" "application/json"
-                              "Access-Control-Allow-Origin" "http://localhost:9090"}}))
+                              "Access-Control-Allow-Origin" "http://localhost:9090"}})
+  ())
 
 (defn start []
-  (reset! server (jetty/run-jetty (fn [req] (app req)) {:port 3000 :join? false})))
+  (reset! server (run-server (fn [req] (app req)) {:port 3000 :join? false})))
 
 (defn stop []
-  (when-some [s @server]
-    (.stop s)
+  (when-not (nil? @server)
+    (@server :timout 100)
     (reset! server nil)))
 
 (comment
