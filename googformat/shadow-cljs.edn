@@ -1,0 +1,18 @@
+;; shadow-cljs configuration
+{:source-paths
+ ["src/dev"
+  "src/main"
+  "src/test"]
+
+ :dependencies
+ [[reagent "1.0.0-alpha2"]
+  [re-frame "1.0.0"]]
+
+ :dev-http {9090 "public/"}
+
+ :builds
+ {:app {:output-dir "public/compiledjs/"
+        :asset-path "compiledjs"
+        :target     :browser
+        :modules    {:main {:init-fn googformat.main/main}}
+        :devtools   {:after-load googformat.main/reload}}}}
