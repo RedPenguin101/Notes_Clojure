@@ -56,6 +56,8 @@
   (def connected-uids     (:connected-uids chsk-server)))
 
 (comment
+
+  @connected-uids
   "Now we have all the various handlers and fns that make up our server, we'll set up the other main
    part of the furniture: the web-socket ROUTER.
    
@@ -66,8 +68,8 @@
    Stopping the router is a matter of derefing the atom to get the 'stop' function, and calling it.")
 
 (defn ws-event-handler [msg]
-  (println "Message received")
-  (pprint msg))
+  #_(println "Message received")
+  #_(pprint msg))
 
 (defonce ws-router (atom nil))
 
@@ -88,7 +90,7 @@
 
 (defn broadcast [i uids send-fn]
   (doseq [uid uids]
-    (println (str "Broadcasting to user:" uid))
+    #_(println (str "Broadcasting to user:" uid))
     (send-fn uid
              [:some/broadcast
               {:what-is-this "An async broadcast pushed from server"
@@ -109,8 +111,8 @@
 
 (defroutes routes
   (GET "/" [] {:status 200 :body (json/write-str {"Hello" "World"}) :headers {"Content-Type" "application/json"}})
-  (GET  "/chsk" req (ws-get-handler req))
-  (POST "/chsk" req (ws-post-handler req)))
+  (GET  "/chsk" req (do (pprint req) (ws-get-handler req)))
+  (POST "/chsk" req (do (pprint req) (ws-post-handler req))))
 
 ;; app
 
@@ -118,6 +120,9 @@
 
 (def app
   (-> #'routes
+      ring.middleware.keyword-params/wrap-keyword-params
+      ring.middleware.params/wrap-params
+      ring.middleware.session/wrap-session
       (wrap-defaults site-defaults)
       (wrap-cors :access-control-allow-origin [#".*"])))
 
